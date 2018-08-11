@@ -35,6 +35,17 @@ for name,d in warp.periodic_table.items():
     species_type_dict[symbol] = getattr(warp, name)
 
 
+# --- Code to handle the instance of Boosted_Frame if needed
+_boosted_frame = None
+def set_boosted_frame(gamma_boost):
+    global _boosted_frame
+    assert _boosted_frame is None, Exception('There can be only one boosted frame')
+    from .run_modes.boosted_frame import Boosted_Frame
+    _boosted_frame = Boosted_Frame(gamma_boost, direction=1.)
+def get_boosted_frame():
+    return _boosted_frame
+
+
 class Species(PICMI_Base.PICMI_Species):
     def init(self, kw):
 
@@ -100,27 +111,41 @@ class GaussianBunchDistribution(PICMI_Base.PICMI_GaussianBunchDistribution):
                                   xmean, ymean, zmean, vxmean, vymean, vzmean, vxdiv, vydiv, vzdiv,
                                   zdist='random', rdist='linear', fourfold=False, lmomentum=True, w=w)
 
+        # --- The parameters describing the bunch are in the lab frame. The particles generated
+        # --- need to be transformed in to the boosted frame.
+        boosted_frame = get_boosted_frame()
+        if boosted_frame is not None:
+            boosted_frame.boost(species, l_inject_plane=False, lallindomain=False)
+
 
 class UniformDistribution(PICMI_Base.PICMI_UniformDistribution):
     def loaddistribution(self, species, layout):
         xmin = self.lower_bound[0]
-        if xmin is None: xmin = w3d.xmmin
         ymin = self.lower_bound[1]
-        if ymin is None: ymin = w3d.ymmin
         zmin = self.lower_bound[2]
-        if zmin is None: zmin = w3d.zmmin
         xmax = self.upper_bound[0]
-        if xmax is None: xmax = w3d.xmmax
         ymax = self.upper_bound[1]
-        if ymax is None: ymax = w3d.ymmax
         zmax = self.upper_bound[2]
-        if zmax is None: zmax = w3d.zmmax
         ux_th = self.rms_velocity[0]
         uy_th = self.rms_velocity[1]
         uz_th = self.rms_velocity[2]
         ux_m = self.directed_velocity[0]
         uy_m = self.directed_velocity[1]
         uz_m = self.directed_velocity[2]
+
+        # --- The inputs are in the lab frame and need to be transformed into the boosted frame.
+        boosted_frame = get_boosted_frame()
+        if boosted_frame is not None:
+            boost = BoostConverter(boosted_frame.gammaframe)
+            if zmin is not None:
+                zmin, = boost.static_length([zmin])
+            if zmax is not None:
+                zmax, = boost.static_length([zmax])
+            if uz_th is not None:
+                uz_th, = boost.longitudinal_momentum([uz_th])
+            if uz_m is not None:
+                uz_m, = boost.longitudinal_momentum([uz_m])
+
         if isinstance(layout, GriddedLayout):
             # --- Note that layout.grid is ignored
             p_nx = layout.n_macroparticle_per_cell[0]
@@ -129,6 +154,8 @@ class UniformDistribution(PICMI_Base.PICMI_UniformDistribution):
 
             npreal_per_cell = self.density*w3d.dx*w3d.dy*w3d.dz
             w = npreal_per_cell/(p_nx*p_ny*p_nz)
+            if boosted_frame is not None:
+                w, = boost.static_density([w])
             def dens_func(x, y, z, w=w):
                 return w
 
@@ -155,6 +182,8 @@ class UniformDistribution(PICMI_Base.PICMI_UniformDistribution):
                 np = layout.n_macroparticles
             npreal = self.density*(xmax - xmin)*(ymax - ymin)*(zmax - zmin)
             w = np.full(np, npreal/np)
+            if boosted_frame is not None:
+                w, = boost.static_density([w])
             species.add_uniform_box(np=np, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, zmin=zmin, zmax=zmax,
                                     vthx=ux_th, vthy=uy_th, vthz=uz_th,
                                     vxmean=ux_m, vymean=uy_m, vzmean=uz_m,
@@ -166,23 +195,37 @@ class UniformDistribution(PICMI_Base.PICMI_UniformDistribution):
 class AnalyticDistribution(PICMI_Base.PICMI_AnalyticDistribution):
     def loaddistribution(self, species, layout):
         xmin = self.lower_bound[0]
-        if xmin is None: xmin = w3d.xmmin
         ymin = self.lower_bound[1]
-        if ymin is None: ymin = w3d.ymmin
         zmin = self.lower_bound[2]
-        if zmin is None: zmin = w3d.zmmin
         xmax = self.upper_bound[0]
-        if xmax is None: xmax = w3d.xmmax
         ymax = self.upper_bound[1]
-        if ymax is None: ymax = w3d.ymmax
         zmax = self.upper_bound[2]
-        if zmax is None: zmax = w3d.zmmax
         ux_th = self.rms_velocity[0]
         uy_th = self.rms_velocity[1]
         uz_th = self.rms_velocity[2]
         ux_m = self.directed_velocity[0]
         uy_m = self.directed_velocity[1]
         uz_m = self.directed_velocity[2]
+
+        if uz_m is not None:
+          gg = np.sqrt(1. + (uz_m/c)**2)
+          betaz_lab = uz_m/gg
+        else:
+          betaz_lab = 0.
+
+        # --- The inputs are in the lab frame and need to be transformed into the boosted frame.
+        boosted_frame = get_boosted_frame()
+        if boosted_frame is not None:
+            boost = BoostConverter(boosted_frame.gammaframe)
+            if zmin is not None:
+                zmin, = boost.static_length([zmin])
+            if zmax is not None:
+                zmax, = boost.static_length([zmax])
+            if uz_th is not None:
+                uz_th, = boost.longitudinal_momentum([uz_th])
+            if uz_m is not None:
+                uz_m, = boost.longitudinal_momentum([uz_m])
+
         if isinstance(layout, GriddedLayout):
             # --- Note that layout.grid is ignored
             p_nx = layout.n_macroparticle_per_cell[0]
@@ -191,9 +234,23 @@ class AnalyticDistribution(PICMI_Base.PICMI_AnalyticDistribution):
 
             if isinstance(self.density_expression, str):
                 cell_volume_per_particle = w3d.dx*w3d.dy*w3d.dz/(p_nx*p_ny*p_nz)
-                def dens_func(x, y, z, density=self.density_expression, cell_volume_per_particle=cell_volume_per_particle):
+                def dens_func(x, y, z, density = self.density_expression,
+                                       cell_volume_per_particle = cell_volume_per_particle,
+                                       boosted_frame = boosted_frame,
+                                       betaz_lab = betaz_lab):
+                    if boosted_frame is not None:
+                        z = boosted_frame.gammaframe*(z*(1 - boosted_frame.betaframe*betaz_lab) - c*top.time*(betaz_lab-boosted_frame.betaframe))
+
                     # --- Include globals so that numpy is available
-                    d = eval(density, locals(), globals())
+                    self.user_defined_kw['__builtins__'] = {}
+                    self.user_defined_kw['x'] = x
+                    self.user_defined_kw['y'] = y
+                    self.user_defined_kw['z'] = z
+                    d = eval(density, self.user_defined_kw)
+
+                    if boosted_frame is not None:
+                        d, = boost.static_density([d])
+
                     return d*cell_volume_per_particle
             else:
                 npreal_per_cell = self.density_expression*w3d.dx*w3d.dy*w3d.dz
@@ -220,12 +277,14 @@ class AnalyticDistribution(PICMI_Base.PICMI_AnalyticDistribution):
             assert not self.fill_in, Exception('Warp does not support fill_in with PseudoRandomLayout')
             assert not isinstance(self.density_expression, str), Exception('Warp does not support PseudoRandomLayout with nonuniform distribution')
             if layout.n_macroparticles_per_cell is not None:
-                np = layout.n_macroparticles_per_cell*w3d.nx*w3d.ny*w3d.nz
+                nn = layout.n_macroparticles_per_cell*w3d.nx*w3d.ny*w3d.nz
             elif layout.n_macroparticles is not None:
-                np = layout.n_macroparticles
+                nn = layout.n_macroparticles
             npreal = self.density_expression*(xmax - xmin)*(ymax - ymin)*(zmax - zmin)
-            w = np.full(np, npreal/np)
-            species.add_uniform_box(np=np, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, zmin=zmin, zmax=zmax,
+            w = np.full(nn, npreal/nn)
+            if boosted_frame is not None:
+                w, = boost.static_density([w])
+            species.add_uniform_box(np=nn, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, zmin=zmin, zmax=zmax,
                                     vthx=ux_th, vthy=uy_th, vthz=uz_th,
                                     vxmean=ux_m, vymean=uy_m, vzmean=uz_m,
                                     lmomentum=1, spacing='random',
@@ -252,7 +311,44 @@ class PseudoRandomLayout(PICMI_Base.PICMI_PseudoRandomLayout):
 
 
 class BinomialSmoother(PICMI_Base.PICMI_BinomialSmoother):
-    pass
+    def initialize_inputs(self, ndims):
+        # --- Setup the list of smoothing parameters
+        n_pass = self.n_pass
+        alpha = self.alpha
+        stride = self.stride
+        if n_pass is None:
+            n_pass = 3*[[1]]
+        if alpha is None:
+            alpha = 3*[[0.5]]
+        if stride is None:
+            stride = 3*[[1]]
+
+        if ndims == 1:
+            for i in range(len(n_pass[0])):
+                n_pass[0][i] = 0
+        if ndims < 3:
+            for i in range(len(n_pass[1])):
+                n_pass[1][i] = 0
+
+        if self.compensation is not None:
+            n_pass = list(n_pass)
+            alpha = list(alpha)
+            stride = list(stride)
+            for i in range(len(n_pass)):
+                n_pass[i] = list(n_pass[i])
+                alpha[i] = list(alpha[i])
+                stride[i] = list(stride[i])
+                for j in range(len(n_pass[i])):
+                    if self.compensation[i]:
+                        n_pass[i].append(1)
+                    else:
+                        n_pass[i].append(0)
+                    alpha[i].append(n_pass[i][j]*(1. - alpha[i][0]) + 1.)
+                    stride[i].append(stride[i][j])
+
+        self.n_pass = np.array(n_pass)
+        self.alpha = np.array(alpha)
+        self.stride = np.array(stride)
 
 
 class CylindricalGrid(PICMI_Base.PICMI_CylindricalGrid):
@@ -266,7 +362,7 @@ class Cartesian2DGrid(PICMI_Base.PICMI_Cartesian2DGrid):
 
 
 class Cartesian3DGrid(PICMI_Base.PICMI_Cartesian3DGrid):
-    def init(self, kw):
+    def initialize_inputs(self):
         w3d.nx = self.nx
         w3d.ny = self.ny
         w3d.nz = self.nz
@@ -276,6 +372,12 @@ class Cartesian3DGrid(PICMI_Base.PICMI_Cartesian3DGrid):
         w3d.ymmax = self.ymax
         w3d.zmmin = self.zmin
         w3d.zmmax = self.zmax
+
+        boosted_frame = get_boosted_frame()
+        if boosted_frame is not None:
+            boost = BoostConverter(boosted_frame.gammaframe)
+            w3d.zmmin, w3d.zmmax = boost.copropag_length([w3d.zmmin, w3d.zmmax])
+
 
         bc_dict = {'dirichlet':warp.dirichlet,
                         'neumann':warp.neumann,
@@ -301,25 +403,71 @@ class Cartesian3DGrid(PICMI_Base.PICMI_Cartesian3DGrid):
 
 class ElectromagneticSolver(PICMI_Base.PICMI_ElectromagneticSolver):
     def init(self, kw):
-        self.solver = EM3D()
+
+        self.l_getrho = kw.pop('warp_l_getrho', false)
+        self.l_correct_num_Cherenkov = kw.pop('warp_l_correct_num_Cherenkov', False)
+        self.l_setcowancoefs = kw.pop('warp_l_setcowancoefs', True)
+        self.type_rz_depose = kw.pop('warp_type_rz_depose', 0)
+        self.laser_depos_order = kw.pop('warp_laser_depos_order', None)
+
+    def initialize_inputs(self):
+
+        self.grid.initialize_inputs()
+
+        stencil = {'Yee':0, 'CKC':1}[self.method]
+
+        circ_m = 0
+        if isinstance(self.grid, CylindricalGrid):
+            circ_m = self.grid.n_azimuthal_modes
+
+        npass_smooth = EM3D.__flaginputs__['npass_smooth']
+        alpha_smooth = EM3D.__flaginputs__['alpha_smooth']
+        stride_smooth = EM3D.__flaginputs__['stride_smooth']
+        if self.field_smoother is not None:
+            self.field_smoother.initialize_inputs(self.grid.number_of_dimensions)
+            npass_smooth = self.field_smoother.n_pass
+            alpha_smooth = self.field_smoother.alpha
+            stride_smooth = self.field_smoother.stride
+
+        if self.laser_depos_order is None:
+            self.laser_depos_order = [EM3D.__flaginputs__['laser_depos_order_x'],
+                                      EM3D.__flaginputs__['laser_depos_order_y'],
+                                      EM3D.__flaginputs__['laser_depos_order_z']]
+
+        self.solver = EM3D(stencil = stencil,
+                           l_getrho = self.l_getrho,
+                           l_correct_num_Cherenkov = self.l_correct_num_Cherenkov,
+                           l_setcowancoefs = self.l_setcowancoefs,
+                           type_rz_depose = self.type_rz_depose,
+                           l_2dxz = (self.grid.number_of_dimensions == 2),
+                           l_2drz = isinstance(self.grid, CylindricalGrid),
+                           circ_m = circ_m,
+                           npass_smooth = npass_smooth,
+                           alpha_smooth = alpha_smooth,
+                           stride_smooth = stride_smooth,
+                           laser_depos_order_x = self.laser_depos_order[0],
+                           laser_depos_order_y = self.laser_depos_order[1],
+                           laser_depos_order_z = self.laser_depos_order[2],
+                           )
+
         registersolver(self.solver)
 
 
 class Electrostatic_solver(PICMI_Base.PICMI_Electrostatic_solver):
-    def init(self, kw):
+    def initialize_inputs(self):
         self.solver = MultiGrid3d()
         registersolver(self.solver)
 
 
 class GaussianLaser(PICMI_Base.PICMI_GaussianLaser):
-    def initialize_inputs(self, solver, antenna):
+    def initialize_inputs(self, solver, antenna, gamma_boost):
         from .init_tools import add_laser
         dim = '3d'
         antenna_z0 = antenna.position[2]
         add_laser(solver.solver, dim, self.a0, self.waist, self.duration*warp.clight,
                   self.centroid_position[2], self.focal_position[2],
                   lambda0=self.wavelength, theta_pol=self.polarization_angle, source_z=antenna_z0,
-                  zeta=0., beta=0., phi2=0., gamma_boost=None, laser_file=None, laser_file_energy=None)
+                  zeta=0., beta=0., phi2=0., gamma_boost=gamma_boost, laser_file=None, laser_file_energy=None)
 
 
 class LaserAntenna(PICMI_Base.PICMI_LaserAntenna):
@@ -343,16 +491,21 @@ class Simulation(PICMI_Base.PICMI_Simulation):
 
         self.inputs_initialized = True
 
+        if self.gamma_boost is not None:
+            set_boosted_frame(self.gamma_boost)
+
         for i in range(len(self.species)):
             if self.species[i].particle_shape is None:
                 self.species[i].particle_shape = self.particle_shape
             self.species[i].initialize_inputs(self.layouts[i])
 
+        self.solver.initialize_inputs()
+
         package('w3d')
         generate()
 
         for i in range(len(self.lasers)):
-            self.lasers[i].initialize_inputs(self.solver, self.laser_injection_methods[i])
+            self.lasers[i].initialize_inputs(self.solver, self.laser_injection_methods[i], self.gamma_boost)
 
     def step(self, nsteps=1):
         self.initilize_inputs()
