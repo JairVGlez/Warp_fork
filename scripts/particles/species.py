@@ -871,8 +871,8 @@ class Species(object):
 
     addpart = addparticles
 
-    def add_uniform_box(self, np, xmin, xmax, ymin, ymax, zmin, zmax, vthx=0.,
-                        vthy=0., vthz=0., vxmean=0., vymean=0., vzmean=0., js=None,
+    def add_uniform_box(self, np, xmin=None, xmax=None, ymin=None, ymax=None, zmin=None, zmax=None,
+                        vthx=0., vthy=0., vthz=0., vxmean=0., vymean=0., vzmean=0., js=None,
                         lmomentum=0, spacing='random', nx=None, ny=None, nz=None,
                         lallindomain=0, solvergeom=None, **kw):
         """
@@ -881,6 +881,7 @@ class Species(object):
      - xmin, xmax, ymin, ymax, zmin, zmax: extent of the box to fill with particles.
                                            It is OK is one or more dimensions have
                                            a length of zero.
+                                           If not given, default to the edge of the global domain.
      - vthx=0., vthy=0., vthz=0.: Thermal velocity
      - vxmean=0., vymean=0., vzmean=0.: Drift velocity
      - lmomentum=false: Set to false when velocities are input as velocities, true
@@ -904,6 +905,14 @@ class Species(object):
             if top.debug:
                 print("add_uniform_box: Warning: no particles loaded since the input np is zero")
             return
+
+        # --- If not given, the min and max default to the edge of the global domain.
+        if xmin is None: xmin = w3d.xmmin
+        if xmax is None: xmax = w3d.xmmax
+        if ymin is None: ymin = w3d.ymmin
+        if ymax is None: ymax = w3d.ymmax
+        if zmin is None: zmin = w3d.zmmin + top.zgrid
+        if zmax is None: zmax = w3d.zmmax + top.zgrid
 
         if lallindomain:
             # --- Crop the min and max to be within the local domain
