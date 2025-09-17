@@ -14,6 +14,8 @@ import warp_parallel
 
 # Dictionaries of correspondance for openPMD
 from .data_dict import unit_dimension_dict
+# Utility methods for openPMD
+from .openpmd_utils import openpmd_encode
 
 class OpenPMDDiagnostic(object) :
     """
@@ -196,17 +198,17 @@ class OpenPMDDiagnostic(object) :
         # Set the attributes of the HDF5 file
 
         # General attributes
-        f.attrs["openPMD"] = np.string_("1.1.0")
+        f.attrs["openPMD"] = openpmd_encode("1.1.0")
         f.attrs["openPMDextension"] = np.uint32(1)
-        f.attrs["software"] = np.string_("warp")
-        f.attrs["softwareVersion"] = np.string_("4")
-        f.attrs["date"] = np.string_(
+        f.attrs["software"] = openpmd_encode("warp")
+        f.attrs["softwareVersion"] = openpmd_encode("5")
+        f.attrs["date"] = openpmd_encode(
             datetime.datetime.now(tzlocal()).strftime('%Y-%m-%d %H:%M:%S %z'))
-        f.attrs["iterationEncoding"] = np.string_("fileBased")
-        f.attrs["iterationFormat"] =  np.string_("data%T.h5")
+        f.attrs["iterationEncoding"] = openpmd_encode("fileBased")
+        f.attrs["iterationFormat"] =  openpmd_encode("data%T.h5")
 
         # Setup the basePath
-        f.attrs["basePath"] = np.string_("/data/%T/")
+        f.attrs["basePath"] = openpmd_encode("/data/%T/")
         base_path = "/data/%d/" %iteration
         bp = f.require_group( base_path )
         bp.attrs["time"] = time

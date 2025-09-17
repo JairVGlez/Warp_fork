@@ -9,6 +9,7 @@ from .generic_diag import OpenPMDDiagnostic
 from warp_parallel import gatherarray, mpiallgather, comm_world
 from .data_dict import macro_weighted_dict, weighting_power_dict, \
      particle_quantity_dict
+from .openpmd_utils import openpmd_encode
 
 class ParticleDiagnostic(OpenPMDDiagnostic) :
     """
@@ -131,18 +132,18 @@ class ParticleDiagnostic(OpenPMDDiagnostic) :
 
         # Generic attributes
         grp.attrs["particleShape"] = float( self.top.depos_order[0][0] )
-        grp.attrs["currentDeposition"] = np.string_("Esirkepov")
-        grp.attrs["particleSmoothing"] = np.string_("none")
+        grp.attrs["currentDeposition"] = openpmd_encode("Esirkepov")
+        grp.attrs["particleSmoothing"] = openpmd_encode("none")
         # Particle pusher
         if self.top.pgroup.lebcancel_pusher==True :
-            grp.attrs["particlePush"] = np.string_("Vay")
+            grp.attrs["particlePush"] = openpmd_encode("Vay")
         else :
-            grp.attrs["particlePush"] = np.string_("Boris")
+            grp.attrs["particlePush"] = openpmd_encode("Boris")
         # Particle shape
         if np.all( self.top.efetch==1 ) :
-            grp.attrs["particleInterpolation"]= np.string_("momentumConserving")
+            grp.attrs["particleInterpolation"]= openpmd_encode("momentumConserving")
         elif np.all( self.top.efetch==4 ) :
-            grp.attrs["particleInterpolation"]= np.string_("energyConserving")
+            grp.attrs["particleInterpolation"]= openpmd_encode("energyConserving")
 
         # Setup constant datasets
         for quantity in ["charge", "mass", "positionOffset"] :
@@ -394,7 +395,7 @@ class ParticleDiagnostic(OpenPMDDiagnostic) :
             # Setup the attributes of the top level of the file
             self.setup_openpmd_file( f, iteration, time, dt )
             # Setup the meshes group (contains all the particles)
-            f.attrs["particlesPath"] = np.string_("particles/")
+            f.attrs["particlesPath"] = openpmd_encode("particles/")
             particle_path = "/data/%d/particles/" %iteration
             particle_grp = f.require_group(particle_path)
             # Loop through all particle species

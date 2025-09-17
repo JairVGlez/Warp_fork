@@ -11,6 +11,8 @@ from .field_extraction import get_circ_dataset, \
 # Import a number of useful dictionaries
 from .data_dict import field_boundary_dict, particle_boundary_dict, \
      field_solver_dict, x_offset_dict, y_offset_dict, z_offset_dict
+# Utility methods for openPMD
+from .openpmd_utils import openpmd_encode
 
 class FieldDiagnostic(OpenPMDDiagnostic):
     """
@@ -402,7 +404,7 @@ class FieldDiagnostic(OpenPMDDiagnostic):
             self.setup_openpmd_file( f, iteration, time, dt )
 
             # Setup the meshes group (contains all the fields)
-            f.attrs["meshesPath"] = np.string_("fields/")
+            f.attrs["meshesPath"] = openpmd_encode("fields/")
             field_path = "/data/%d/fields/" %iteration
             field_grp = f.require_group(field_path)
             self.setup_openpmd_meshes_group(field_grp)
@@ -491,13 +493,13 @@ class FieldDiagnostic(OpenPMDDiagnostic):
 
         # Current Smoothing
         if np.all( self.em.npass_smooth == 0 ):
-            dset.attrs["currentSmoothing"] = np.string_("none")
+            dset.attrs["currentSmoothing"] = openpmd_encode("none")
         else:
-            dset.attrs["currentSmoothing"] = np.string_("Binomial")
+            dset.attrs["currentSmoothing"] = openpmd_encode("Binomial")
             dset.attrs["currentSmoothingParameters"] = \
-              np.string_(str(self.em.npass_smooth))
+              openpmd_encode(str(self.em.npass_smooth))
         # Charge correction
-        dset.attrs["chargeCorrection"] = np.string_("none")
+        dset.attrs["chargeCorrection"] = openpmd_encode("none")
 
 
     def setup_openpmd_mesh_record( self, dset, quantity, dz, zmin, xmin = None, ymin = None ):
@@ -532,35 +534,35 @@ class FieldDiagnostic(OpenPMDDiagnostic):
         # Geometry parameters
         # - thetaMode
         if self.dim == "circ":
-            dset.attrs['geometry']  = np.string_("thetaMode")
+            dset.attrs['geometry']  = openpmd_encode("thetaMode")
             dset.attrs['geometryParameters'] = \
-              np.string_("m=%d;imag=+" %(self.em.circ_m + 1))
+              openpmd_encode("m=%d;imag=+" %(self.em.circ_m + 1))
             dset.attrs['gridSpacing'] = np.array([ self.dx, dz ])
             dset.attrs['axisLabels'] = np.array([ b'r', b'z' ])
             dset.attrs["gridGlobalOffset"] = np.array([xmin_d, zmin])
         # - 1D Cartesian
         elif self.dim == "1d":
-            dset.attrs['geometry'] = np.string_("cartesian")
+            dset.attrs['geometry'] = openpmd_encode("cartesian")
             dset.attrs['gridSpacing'] = np.array([ dz ])
             dset.attrs['axisLabels'] = np.array([ b'z' ])
             dset.attrs["gridGlobalOffset"] = np.array([zmin])
         # - 2D Cartesian
         elif self.dim == "2d":
-            dset.attrs['geometry'] = np.string_("cartesian")
+            dset.attrs['geometry'] = openpmd_encode("cartesian")
             dset.attrs['gridSpacing'] = np.array([ self.dx, dz ])
             dset.attrs['axisLabels'] = np.array([ b'x', b'z' ])
             dset.attrs["gridGlobalOffset"] = np.array([xmin_d, zmin])
         # - 3D Cartesian
         elif self.dim == "3d":
-            dset.attrs['geometry'] = np.string_("cartesian")
+            dset.attrs['geometry'] = openpmd_encode("cartesian")
             dset.attrs['gridSpacing'] = np.array([ self.dx, self.dy, dz ])
             dset.attrs['axisLabels'] = np.array([ b'x', b'y', b'z' ])
             dset.attrs["gridGlobalOffset"] = np.array([ xmin_d,
                                                     ymin_d, zmin])
         # Generic attributes
-        dset.attrs["dataOrder"] = np.string_("C")
+        dset.attrs["dataOrder"] = openpmd_encode("C")
         dset.attrs["gridUnitSI"] = 1.
-        dset.attrs["fieldSmoothing"] = np.string_("none")
+        dset.attrs["fieldSmoothing"] = openpmd_encode("none")
 
     def setup_openpmd_mesh_component( self, dset, quantity ):
         """

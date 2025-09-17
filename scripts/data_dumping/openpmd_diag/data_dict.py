@@ -3,6 +3,7 @@ This file defines useful correspondance dictionaries
 which are used in the openPMD writer
 """
 import numpy as np
+from .openpmd_utils import openpmd_encode
 
 # Correspondance between quantity and corresponding dimensions
 # As specified in the openPMD standard, the arrays represent the
@@ -76,17 +77,17 @@ particle_quantity_dict = { 'E' : 'e', 'B' : 'b', \
 # Correspondance between the boundary conditions in Warp,
 # and the corresponding representative integer
 field_boundary_dict = {
-    0: np.bytes_("reflecting"),
-    1: np.bytes_("reflecting"),
-    2: np.bytes_("periodic"),
-    3: np.bytes_("openbc") }
+    0: openpmd_encode("reflecting"),
+    1: openpmd_encode("reflecting"),
+    2: openpmd_encode("periodic"),
+    3: openpmd_encode("openbc") }
 particle_boundary_dict = {
-    0: np.bytes_("absorbing"),
-    1: np.bytes_("reflecting"),
-    2: np.bytes_("periodic") }
+    0: openpmd_encode("absorbing"),
+    1: openpmd_encode("reflecting"),
+    2: openpmd_encode("periodic") }
 # Correspondance between the field solver in Warp,
 # and the corresponding representative integer
 field_solver_dict = {
-    0: np.bytes_("Yee"),
-    1: np.bytes_("CK"),
-    3: np.bytes_("Lehe") }
+    0: openpmd_encode("Yee"),
+    1: openpmd_encode("CK"),
+    3: openpmd_encode("Lehe") }
