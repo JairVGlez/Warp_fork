@@ -358,7 +358,7 @@ def ranf(x=None,i1=None,nbase=None):
             return random.random(shape(x))
     else:
         if not nbase: nbase = 2
-        n = product(array(shape(array(x))))
+        n = prod(array(shape(array(x))))
         result = zeros(n,'d')
         rnrevarray(n,result,i1,nbase)
         result.shape = shape(x)
@@ -381,7 +381,7 @@ def rnormarray(x,i1=None,nbase1=None,nbase2=None):
         # --- Use digit reversed random number generator
         if not nbase1: nbase1 = 2
         if not nbase2: nbase2 = 3
-        n = product(array(shape(x)))
+        n = prod(array(shape(x)))
         result = zeros(n,'d')
         rnormdig(i1,n,nbase1,nbase2,0.,result)
         result.shape = shape(x)
@@ -481,7 +481,7 @@ def getappliedfieldsongrid(nx=None,ny=None,nz=None,
         zmax = 0.
 
     x,y,z = getmesh3d(xmin,dx,nx,ymin,dy,ny,zmin,dz,nz)
-    nxyz = product(array(shape(x)))
+    nxyz = prod(array(shape(x)))
     x.shape = (nxyz,)
     y.shape = (nxyz,)
     z.shape = (nxyz,)

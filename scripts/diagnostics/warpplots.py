@@ -854,7 +854,7 @@ pla( y [, x] )
     if len(shape(x)) > 2:
         # --- Reshape the array, putting all but the 1st dimension into the
         # --- 2nd dimension.
-        xx = reshape(x,(x.shape[0],product(x.shape[1:])))
+        xx = reshape(x,(x.shape[0],prod(x.shape[1:])))
     elif len(shape(x)) == 2:
         # --- The input x is usable as is.
         xx = x
@@ -864,7 +864,7 @@ pla( y [, x] )
     if len(shape(y)) > 2:
         # --- Reshape the array, putting all but the 1st dimension into the
         # --- 2nd dimension.
-        yy = reshape(y,(y.shape[0],product(y.shape[1:])))
+        yy = reshape(y,(y.shape[0],prod(y.shape[1:])))
     elif len(shape(y)) == 2:
         # --- The input y is usable as is.
         yy = y

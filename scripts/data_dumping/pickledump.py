@@ -166,7 +166,7 @@ def pickledump(filename=None,attr=['dump'],vars=[],serial=0,ff=None,
             continue
 
         # --- Zero length arrays cannot by written out so they are skipped.
-        if isinstance(vval,numpy.ndarray) and numpy.product(vval.shape) == 0:
+        if isinstance(vval,numpy.ndarray) and numpy.prod(vval.shape) == 0:
             continue
 
         # --- If the object is a class or an instance of a class that was defined

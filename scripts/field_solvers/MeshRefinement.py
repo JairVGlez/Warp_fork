@@ -1642,7 +1642,7 @@ class MeshRefinement(VisualizableClass):
 
     def getmem(self):
         if not self.isfirstcall(): return
-        memtot = product(self.dims + 1)
+        memtot = prod(self.dims + 1)
         for child in self.children:
             memtot = memtot + child.getmem()
         return memtot

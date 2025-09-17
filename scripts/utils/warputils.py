@@ -218,7 +218,7 @@ def maxnd(x,defaultval=-1.e36):
     - defaultval=-1.e36: value returned if the input has zero length
     """
     if isinstance(x,ndarray) and x.size > 0: return x.max()
-    xtemp = reshape(x,tuple([product(array(shape(x)))]))
+    xtemp = reshape(x,tuple([prod(array(shape(x)))]))
     if len(xtemp) == 0: return defaultval
     return max(xtemp)
 # --- Returns the min of the multiarray
@@ -229,7 +229,7 @@ def minnd(x,defaultval=+1.e36):
     - defaultval=+1.e36: value returned if the input has zero length
     """
     if isinstance(x,ndarray) and x.size > 0: return x.min()
-    xtemp = reshape(x,tuple([product(array(shape(x)))]))
+    xtemp = reshape(x,tuple([prod(array(shape(x)))]))
     if len(xtemp) == 0: return defaultval
     return min(xtemp)
 # --- Returns the sum of the multiarray
@@ -240,7 +240,7 @@ def sumnd(x,defaultval=0.):
     - defaultval=0.: value returned if the input has zero length
     """
     if isinstance(x,ndarray) and x.size > 0: return x.sum()
-    xtemp = reshape(x,tuple([product(array(shape(x)))]))
+    xtemp = reshape(x,tuple([prod(array(shape(x)))]))
     if len(xtemp) == 0: return defaultval
     return sum(xtemp)
 # --- Returns the sum of the multiarray
@@ -251,7 +251,7 @@ def avend(x,defaultval=0.):
     - defaultval=0.: value returned if the input has zero length
     """
     if isinstance(x,ndarray) and x.size > 0: return x.sum()/x.size
-    xtemp = reshape(x,tuple([product(array(shape(x)))]))
+    xtemp = reshape(x,tuple([prod(array(shape(x)))]))
     if len(xtemp) == 0: return defaultval
     return sum(xtemp)/len(xtemp)
 
@@ -428,7 +428,7 @@ def getdatafromtextfile(filename,nskip=0,dims=None,dtype='d',fortranordering=Tru
     # --- be read in to give an exit condition for the loop below.
     # --- This allows less than the whole file to be read in.
     if dims[-1] is not None:
-        ntot = product(dims)
+        ntot = prod(dims)
     else:
         ntot = None
 
@@ -461,7 +461,7 @@ def getdatafromtextfile(filename,nskip=0,dims=None,dtype='d',fortranordering=Tru
     # --- If last dimension is None, calculate it from the amount of data.
     if dims[-1] is None:
         ndata = len(data)
-        ndims = product(dims[:-1])
+        ndims = prod(dims[:-1])
         # --- If file is empty, ndims will be zero.
         if ndims > 0:
             nlast = int(ndata/ndims)

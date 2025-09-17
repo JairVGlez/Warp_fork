@@ -21,7 +21,7 @@ def printarraysizes(filename=None, threshold=0):
         for vname in vlist:
             try:
                 v = eval(pkg+'.'+vname)
-                s = product(array(shape(v)))
+                s = prod(array(shape(v)))
                 if s > threshold:
                     if printtofile:
                         ff.write("%s.%s %d\n" % (pkg, vname, s))

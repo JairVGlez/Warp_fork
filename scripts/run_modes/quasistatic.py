@@ -2082,7 +2082,7 @@ class Quasistatic(SubcycledPoissonSolver):
          for i in range(frz.ngrids):
            x,y = getmesh2d(xmin+g.dr/2,g.dr,g.nr-g.transit_min_r-g.transit_max_r-1, 
                            ymin+g.dz/2,g.dz,g.nz-g.transit_min_z-g.transit_max_z-1)
-           np = product(shape(x))
+           np = prod(shape(x))
            x.shape = (np,)
            y.shape = (np,)
            if i<frz.ngrids-1:

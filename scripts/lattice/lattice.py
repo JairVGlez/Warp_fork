@@ -4415,7 +4415,7 @@ def convertmmlttobgrd(imlist=None):
         yy += top.mmltoy[im]
 
         # --- Get the B field at the grid locations
-        nn = product(xx.shape)
+        nn = prod(xx.shape)
         xx.shape = (nn,)
         yy.shape = (nn,)
         zz.shape = (nn,)
