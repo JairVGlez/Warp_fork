@@ -1326,7 +1326,7 @@ class ParticleScraper(object):
                 itime[:] = itime + dtover
 
             # --- Quit the loop if all intercepts have been found.
-            if alltrue(dtover==0.): break
+            if np.all(dtover==0.): break
 
         # --- Check for cases where no interception was found. In those cases,
         # --- restore the original data since that will at least not cause

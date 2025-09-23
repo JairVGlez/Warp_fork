@@ -423,7 +423,7 @@ class OpenBC3D(SubcycledPoissonSolver):
 
         # --- If the E field is not actively being used, then recalculate it,
         # --- unless recalculate is passed in by the user.
-        if (alltrue(top.efetch != 3) and maxnd(top.depos_order) == 1 and
+        if (np.all(top.efetch != 3) and maxnd(top.depos_order) == 1 and
             recalculate is None):
             recalculate = 1
 

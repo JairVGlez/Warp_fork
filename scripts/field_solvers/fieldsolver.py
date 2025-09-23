@@ -2337,7 +2337,7 @@ def getselfe(comp=None,ix=None,iy=None,iz=None,bcast=1,local=0,fullplane=0,
         Ey = solver.getey()
         Ez = solver.getez()
 
-    elif ((alltrue(top.efetch != 3) and maxnd(top.depos_order) == 1) or
+    elif ((np.all(top.efetch != 3) and maxnd(top.depos_order) == 1) or
           not w3d.allocated('selfe')):
         # --- If not already using selfe, then allocate it and set it.
         # --- Note that this could be an unexpected expense for a user.
