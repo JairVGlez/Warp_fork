@@ -1,6 +1,7 @@
 
-# Ignore IDE files 
+# Ignore IDE files
 .idea/*
+.vscode
 
 # Ignore Mac extra files
 .DS_Store
