@@ -13,6 +13,8 @@ unit_dimension_dict = {
     "J" : np.array([-2., 0., 0., 1., 0., 0., 0.]),
     "E" : np.array([ 1., 1.,-3.,-1., 0., 0., 0.]),
     "B" : np.array([ 0., 1.,-2.,-1., 0., 0., 0.]),
+    "phi" : np.array([ 2., 1.,-3.,-1., 0., 0., 0.]),
+    "A" : np.array([ 1., 1.,-2.,-1., 0., 0., 0.]),
     "charge" : np.array([0., 0., 1., 1., 0., 0., 0.]),
     "mass" : np.array([1., 0., 0., 0., 0., 0., 0.]),
     "weighting" : np.array([0., 0., 0., 0., 0., 0., 0.]),
@@ -20,9 +22,11 @@ unit_dimension_dict = {
     "position" : np.array([1., 0., 0., 0., 0., 0., 0.]),
     "positionOffset" : np.array([1., 0., 0., 0., 0., 0., 0.]),
     "momentum" : np.array([1., 1.,-1., 0., 0., 0., 0.]),
-    "E" : np.array([ 1., 1.,-3.,-1., 0., 0., 0.]),
-    "B" : np.array([ 0., 1.,-2.,-1., 0., 0., 0.]),
     "t" : np.array([ 0., 0., 1., 0., 0., 0., 0.])}
+
+unit_dimension_dict["potential"] = unit_dimension_dict["phi"]
+unit_dimension_dict["voltage"] = unit_dimension_dict["phi"]
+unit_dimension_dict["vector_potential"] = unit_dimension_dict["A"]
 
 # Spatial offset of the different fields
 x_offset_dict = {
