@@ -122,7 +122,7 @@ if os.access('setup.local.py', os.F_OK):
     exec(compile(open('setup.local.py').read(), 'setup.local.py', 'exec'))
 
 elif parallel:
-    if fcompexec is None or fcompexec == 'mpifort' or fcompexec == 'mpif90':
+    if fcompexec == 'mpifort' or fcompexec == 'mpif90':
         # --- If parallel, try the "mpifort -show" to get the mpi libraries
         try:
             show = subprocess.check_output([fcompexec, '-show'], universal_newlines=True, stderr=subprocess.STDOUT)
