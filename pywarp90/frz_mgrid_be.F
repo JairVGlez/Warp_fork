@@ -391,7 +391,7 @@ c     --- Do initial relaxation iterations
         call relaxberz(mglevel,nxlocal,nzlocal,phi,rho,regionid,
      &                 dxsqi,dzsqi,dx,dz,xminodx,
      &                 localbounds,mgparam,lrz,lcndbndy,icndbndy,conductors,
-     &                 fsdecomp,whosendingdown,whosendingup)
+     &                 fsdecomp,whosendingdown,whosendingup,lapplyphiclamp)
       enddo
 
 c     --- Recurse until the bottom layer is reached.
@@ -557,12 +557,7 @@ c     --- Do final relaxation passes.
         call relaxberz(mglevel,nxlocal,nzlocal,phi,rho,regionid,
      &                 dxsqi,dzsqi,dx,dz,xminodx,
      &                 localbounds,mgparam,lrz,lcndbndy,icndbndy,conductors,
-     &                 fsdecomp,whosendingdown,whosendingup)
-        if (lapplyphiclamp) then
-          call clampphitophimaxberz(nxlocal,nzlocal,dx,dz,phi,rho,regionid)
-          call cond_potmgberz(conductors%interior,nxlocal,nzlocal,phi,
-     &                        mglevel)
-        endif
+     &                 fsdecomp,whosendingdown,whosendingup,lapplyphiclamp)
       enddo
 
       return
@@ -571,7 +566,7 @@ c=============================================================================
       subroutine relaxberz(mglevel,nxlocal,nzlocal,phi,rho,regionid,
      &                     dxsqi,dzsqi,dx,dz,xminodx,localbounds,
      &                     mgparam,lrz,lcndbndy,icndbndy,conductors,
-     &                     fsdecomp,whosendingdown,whosendingup)
+     &                     fsdecomp,whosendingdown,whosendingup,lapplyphiclamp)
       use ConductorTypemodule
       use BoltzmannElectrons
       use Decompositionmodule
@@ -587,6 +582,7 @@ c=============================================================================
       type(Decomposition):: fsdecomp
       type(Decomposition):: whosendingdown
       type(Decomposition):: whosendingup
+      logical(ISZ):: lapplyphiclamp
 
 c This routine does one pass of point SOR with even-odd (red-black)
 c ordering.  It makes calls to the routines which specify internal
@@ -765,6 +761,11 @@ c       --- This must be done inside the loop over parities so that the
 c       --- guard planes are updated with the most recent values.
         call applyboundaryconditions3d(nxlocal,0,nzlocal,1,0,1,phi,
      &                                 1,localbounds,.true.,.false.)
+
+        if (lapplyphiclamp) then
+          call clampphitophimaxberz(nxlocal,nzlocal,dx,dz,phi,rho,regionid)
+          call cond_potmgberz(conductors%interior,nxlocal,nzlocal,phi,mglevel)
+        endif
 
 c     --- end of loop over even and odd points
       enddo
