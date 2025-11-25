@@ -613,7 +613,6 @@ c boundaries are periodic.
       real(kind=8):: denom,Lphi,expo
       real(kind=8):: boltzfac(0:nxlocal,0:nzlocal)
       real(kind=8):: iondensitytmp,electemptmp,boltzfac1,epszfactmp
-      real(kind=8):: phiold
 
 c     --- Put desired potential onto conductors in phi array.
       call cond_potmgberz(conductors%interior,nxlocal,nzlocal,phi,mglevel)
@@ -689,7 +688,6 @@ c       precompute Boltzmann factor and some other arrays
                   if (lincludeiondensityinrho(id)) then
                     rhoe(ix,iz) = rhoe(ix,iz) - iondensitytmp/epsilontmp
                   endif
-                  ix1 = ixmin + mod(ixmin + iz + parity,2)
                 endif
               endif
            enddo
@@ -743,7 +741,6 @@ c           valid
               Lphi =  (phi(ix-1,iz  )+phi(ix+1,iz  ))*dxsqi
      &             +  (phi(ix  ,iz-1)+phi(ix  ,iz+1))*epszfactmp
      &              -  phi(ix,iz)*2.*(dxsqi+epszfactmp) - rhoe(ix,iz)
-              phiold = phi(ix,iz)
               phi(ix,iz) = phi(ix,iz) - mgparam*(Lphi - rho(ix,iz))/denom
             enddo
           enddo
