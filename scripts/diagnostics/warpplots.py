@@ -842,9 +842,17 @@ pla( y [, x] )
     kw.setdefault('type',linetype)
     if len(shape(y)) == 0: y = [y]
     if x is not None and len(shape(x)) == 0: x = [x]
-    y = array(y,copy=False)
+    try:
+        y = array(y,copy=False)
+    except ValueError:
+        # An array could not be made without a copy, so force it
+        y = array(y,copy=True)
     if x is not None:
-        x = array(x,copy=False)
+        try:
+            x = array(x,copy=False)
+        except ValueError:
+            # An array could not be made without a copy, so force it
+            x = array(x,copy=True)
         # --- This is the only constraint on the input arrays.
         assert shape(x)[0]==shape(y)[0],\
           'The first dimensions of the two input arrays must be of the same length'
