@@ -1473,7 +1473,7 @@ c     --- and the ion particle density (rho).
             else
               rhomax = electrondensitymaxscale(id)
             endif
-            phimax = plasmapotential(id)+electemptmp*log(rhomax)
+            phimax = plasmapotential(id)!+electemptmp*log(rhomax)
             if (phi(ix,iz) > phimax) phi(ix,iz) = phimax
           endif
         enddo
