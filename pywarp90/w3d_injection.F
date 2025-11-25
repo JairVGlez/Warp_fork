@@ -115,7 +115,7 @@ c Print warning if vbeamfrm is not zero
       if (.not. l_inj_user_particles .and. inject .ne. 100) then
 c       --- Unless the user is creating the particles to be injected,
 c       --- make sure that the source radius is nonzero.
-        if (minval(ainject) <= 0. .or. minval(binject) <= 0.) then
+        if (minval(ainject) <= 0. .or. (minval(binject) <= 0. .and. inj_ny > 0)) then
           call kaboom("inject3d: ainject and binject must be both greater than zero.")
           return
         endif
@@ -377,9 +377,9 @@ c             --- l_inj_user_particles is true.
                 if (abs(yt(ip)) >= inj_nx*inj_dx) cycle
               else
                 if (xt(ip) < inj_xmmin(ij)) cycle
-                if (yt(ip) < inj_ymmin(ij)) cycle
+                if (yt(ip) < inj_ymmin(ij) .and. inj_ny > 0) cycle
                 if (xt(ip) >= inj_xmmin(ij) + inj_nx*inj_dx) cycle
-                if (yt(ip) >= inj_ymmin(ij) + inj_ny*inj_dy) cycle
+                if (yt(ip) >= inj_ymmin(ij) + inj_ny*inj_dy .and. inj_ny > 0) cycle
               endif
 
 c             --- find injection surface axial location via interpolation
@@ -2872,7 +2872,7 @@ c     --- Setup grids covering injection surfaces.
         inx = nint((ixmax - ixmin)/inj_dx)
         inj_nx = max(inj_nx,inx)
 
-        if (l_inj_rz .or. l_inj_rz_grid) then
+        if (l_inj_rz .or. l_inj_rz_grid .or. ny == 0) then
           inj_ny = 0
         else
           iymin = max(ymin,yinject(ij) - binject(ij) - 2*inj_dy)
@@ -2899,7 +2899,7 @@ c     --- Keep for backwards compatibility.
       if (l_inj_rz) l_inj_exact = .true.
 
       inj_dz0 = inj_dz
-      if(inj_nz>1) inj_dz = inj_d(1)*inj_dz/(real(inj_nz-1)*2.**(1./3.)+real(2-inj_nz))**3
+      if(inj_nz >1 ) inj_dz = inj_d(1)*inj_dz/(real(inj_nz-1)*2.**(1./3.)+real(2-inj_nz))**3
       if(inj_nz > 1 .and. ninject > 1) then
         call kaboom("injctint: inj_nz > 1 not yet supported for ninject > 1")
         return
