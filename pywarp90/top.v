@@ -3062,6 +3062,11 @@ deposgridrzvect(itask:integer,np:integer,x(np):real,y(np):real,z(np):real,
             xmin:real,xmax:real,ymin:real,ymax:real)
         subroutine
         # Deposits velocities onto a 2-D radial grid using linear weighting.
+deposgridtemperature2d(np:integer,x(np):real,z(np):real,vx(np):real,vy(np):real,vz(np):real,
+                       nx:integer,nz:integer,grid(0:nx,0:nz):real,
+                       xmin:real,xmax:real,zmin:real,zmax:real,mass:real)
+        subroutine
+        # Calculates temperature on a 2-D nodal grid using linear weighting
 getgrid2d(np:integer,x(np):real,y(np):real,z(np):real,
           nx:integer,ny:integer,grid(0:nx,0:ny):real,
           xmin:real,xmax:real,ymin:real,ymax:real) subroutine

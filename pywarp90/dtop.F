@@ -2391,6 +2391,152 @@ c     --- itask == 0.
       return
       end
 c=============================================================================
+      subroutine deposgridtemperature2d(np,x,z,vx,vy,vz,nx,nz,grid,
+     &                                  xmin,xmax,zmin,zmax, mass)
+      use Constant
+      integer(ISZ):: nx, nz, np
+      real(kind=8):: x(np), z(np), vx(np), vy(np), vz(np)
+      real(kind=8):: grid(0:nx,0:nz)
+      real(kind=8):: xmin, xmax, zmin, zmax
+      real(kind=8):: mass
+
+c Deposits temperature on node centered grid,
+c 2-D mesh using linear interpolation.
+c   np: number of particles
+c   x, z: arrays of particle positions
+c   vx, vz, arrays of particle velocities
+c   nx, nz: number of grid cells
+c   grid: array where the temperature is accumulated
+c   xmin,xmax,zmin,zmax: extent of the grid, i.e. grid(0,0,:) is at (xmin,zmin),
+c                        grid(nx,nz,:) is at (xmax,zmax)
+
+      integer(ISZ):: ip,ix,iz
+      real(kind=8):: gx,gz,dxi,dzi,wx,wz
+      real(kind=8):: vxdel, vydel, vzdel, vsq
+
+      real(kind=8), allocatable:: gridvbar(:,:,:)
+      real(kind=8), allocatable:: gridvsqbar(:,:)
+      integer:: alloc_status
+
+      if (xmax == xmin .or. zmax == zmin) then
+        call kaboom("deposgridrzvect: the grid extent is zero, rmin==rmax or zmin==zmax")
+        return
+      endif
+
+      allocate(gridvbar(0:nx, 0:nz, 3), gridvsqbar(0:nx, 0:nz),
+     &         stat=alloc_status)
+      if (alloc_status /= 0) then
+        print*,"Error:deposgridtemperature2d: could not be allocate work arrays"
+        stop
+      endif
+
+      grid = 0.
+      gridvbar = 0.
+      gridvsqbar = 0.
+
+c     --- set grid cell inverse sizes
+      dxi = nx/(xmax - xmin)
+      dzi = nz/(zmax - zmin)
+
+c     --- loop over particles
+      do ip=1,np
+
+        gx = (x(ip) - xmin)*dxi
+        gz = (z(ip) - zmin)*dzi
+
+c       --- if within grid, accumulate
+        if (0. <= gx .and. gx < nx .and.
+     &      0. <= gz .and. gz < nz) then
+          ix = int(gx)
+          iz = int(gz)
+          wx = gx - ix
+          wz = gz - iz
+          gridvbar(ix  ,iz  ,1) = gridvbar(ix  ,iz  ,1) + vx(ip)*(1. - wx)*(1. - wz)
+          gridvbar(ix+1,iz  ,1) = gridvbar(ix+1,iz  ,1) + vx(ip)*      wx *(1. - wz)
+          gridvbar(ix  ,iz+1,1) = gridvbar(ix  ,iz+1,1) + vx(ip)*(1. - wx)*      wz
+          gridvbar(ix+1,iz+1,1) = gridvbar(ix+1,iz+1,1) + vx(ip)*      wx *      wz
+          gridvbar(ix  ,iz  ,2) = gridvbar(ix  ,iz  ,1) + vy(ip)*(1. - wx)*(1. - wz)
+          gridvbar(ix+1,iz  ,2) = gridvbar(ix+1,iz  ,1) + vy(ip)*      wx *(1. - wz)
+          gridvbar(ix  ,iz+1,2) = gridvbar(ix  ,iz+1,1) + vy(ip)*(1. - wx)*      wz
+          gridvbar(ix+1,iz+1,2) = gridvbar(ix+1,iz+1,1) + vy(ip)*      wx *      wz
+          gridvbar(ix  ,iz  ,3) = gridvbar(ix  ,iz  ,3) + vz(ip)*(1. - wx)*(1. - wz)
+          gridvbar(ix+1,iz  ,3) = gridvbar(ix+1,iz  ,3) + vz(ip)*      wx *(1. - wz)
+          gridvbar(ix  ,iz+1,3) = gridvbar(ix  ,iz+1,3) + vz(ip)*(1. - wx)*      wz
+          gridvbar(ix+1,iz+1,3) = gridvbar(ix+1,iz+1,3) + vz(ip)*      wx *      wz
+          grid(ix  ,iz  ) = grid(ix  ,iz  ) + (1. - wx)*(1. - wz)
+          grid(ix+1,iz  ) = grid(ix+1,iz  ) +       wx *(1. - wz)
+          grid(ix  ,iz+1) = grid(ix  ,iz+1) + (1. - wx)*      wz
+          grid(ix+1,iz+1) = grid(ix+1,iz+1) +       wx *      wz
+        endif
+
+      enddo
+
+#ifdef MPIPARALLEL
+      call parallelsumrealarray(grid, (nx+1)*(nz+1))
+      call parallelsumrealarray(gridvbar, 3*(nx+1)*(nz+1))
+#endif
+
+c     --- Divide out the number of particles at each grid point
+      do iz=0,nz
+        do ix=0,nx
+          if (grid(ix,iz) > 0.) then
+            gridvbar(ix,iz,:) = gridvbar(ix,iz,:)/grid(ix,iz)
+          endif
+        enddo
+      enddo
+
+c     --- loop over particles
+      do ip=1,np
+
+        gx = (x(ip) - xmin)*dxi
+        gz = (z(ip) - zmin)*dzi
+
+c       --- if within grid, accumulate
+        if (0. <= gx .and. gx < nx .and.
+     &      0. <= gz .and. gz < nz) then
+          ix = int(gx)
+          iz = int(gz)
+          wx = gx - ix
+          wz = gz - iz
+          vxdel = gridvbar(ix  ,iz  ,1)*(1. - wx)*(1. - wz) +
+     &            gridvbar(ix+1,iz  ,1)*      wx *(1. - wz) +
+     &            gridvbar(ix  ,iz+1,1)*(1. - wx)*      wz  +
+     &            gridvbar(ix+1,iz+1,1)*      wx *      wz
+          vydel = gridvbar(ix  ,iz  ,2)*(1. - wx)*(1. - wz) +
+     &            gridvbar(ix+1,iz  ,2)*      wx *(1. - wz) +
+     &            gridvbar(ix  ,iz+1,2)*(1. - wx)*      wz  +
+     &            gridvbar(ix+1,iz+1,2)*      wx *      wz
+          vzdel = gridvbar(ix  ,iz  ,2)*(1. - wx)*(1. - wz) +
+     &            gridvbar(ix+1,iz  ,2)*      wx *(1. - wz) +
+     &            gridvbar(ix  ,iz+1,2)*(1. - wx)*      wz  +
+     &            gridvbar(ix+1,iz+1,2)*      wx *      wz
+          vsq = (vx(ip) - vxdel)**2 + (vy(ip) - vydel)**2 + (vz(ip) - vzdel)**2
+          gridvsqbar(ix  ,iz  ) = gridvsqbar(ix  ,iz  ) + vsq*(1. - wx)*(1. - wz)
+          gridvsqbar(ix+1,iz  ) = gridvsqbar(ix+1,iz  ) + vsq*      wx *(1. - wz)
+          gridvsqbar(ix  ,iz+1) = gridvsqbar(ix  ,iz+1) + vsq*(1. - wx)*      wz
+          gridvsqbar(ix+1,iz+1) = gridvsqbar(ix+1,iz+1) + vsq*      wx *      wz
+        endif
+
+      enddo
+
+#ifdef MPIPARALLEL
+      call parallelsumrealarray(gridvsqbar, (nx+1)*(nz+1))
+#endif
+
+c     --- Divide out the number of particles at each grid point
+      do iz=0,nz
+        do ix=0,nx
+          if (grid(ix,iz) > 0.) then
+            grid(ix,iz) = mass*gridvsqbar(ix,iz)/grid(ix,iz)/(3.*echarge)
+          endif
+        enddo
+      enddo
+
+      deallocate(gridvbar, gridvsqbar)
+
+      return
+      end
+c=============================================================================
       subroutine getgrid2d(np,x,y,z,nx,ny,grid,xmin,xmax,ymin,ymax)
       integer(ISZ):: nx,ny,np
       real(kind=8):: x(np), y(np), z(np)
