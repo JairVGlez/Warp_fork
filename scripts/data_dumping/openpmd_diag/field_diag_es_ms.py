@@ -7,6 +7,7 @@ import h5py as h5
 import numpy as np
 from warp import getselfe, getphi, getb, geta
 from warp_parallel import comm_world
+from .data_dict import unit_dimension_dict
 
 
 class StaticDiagnostic(object):
@@ -117,7 +118,8 @@ class StaticDiagnostic(object):
         return True
 
     def writeDataset(self, data, prefix, attrs={}):
-        # print "Shape in writeDataset", self.efield.shape
+        quantity = str(prefix).strip('/').split('/')[-1]
+
         if len(data.shape) == len(self.dims) or (self.geometry == 'cartesian2D' and len(data.shape) == len(self.dims) - 1):  # Scalar data on the mesh
             self.file[prefix] = data
             field = self.file[prefix]
@@ -133,8 +135,7 @@ class StaticDiagnostic(object):
                 coord.attrs['position'] = [0.0]*len(self.axisLabels)  # Report field as on the mesh elements
                 coord.attrs['unitSI'] = 1.0
 
-                field = self.file[prefix]
-                # field.attrs['n%s' % self.dims[i]] = self.gridsize[i]
+            field = self.file[prefix]
         else:
             raise Exception("Unknown data shape: %s" % repr(data.shape))
 
@@ -147,6 +148,12 @@ class StaticDiagnostic(object):
         else:
             raise Exception("No handler for geometry type %i" % self.solver.solvergeom)
 
+        # Generic record attributes
+        field.attrs["timeOffset"] = 0.0
+        if quantity in unit_dimension_dict:
+            field.attrs["unitDimension"] = unit_dimension_dict[quantity]
+
+        # Mesh record attributes
         field.attrs['geometry'] = self.geometry
         field.attrs['geometryParameters'] = self.geometryParameters
         field.attrs['dataOrder'] = 'C'  # C-like order
