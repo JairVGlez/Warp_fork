@@ -857,7 +857,7 @@ c  be done at the end of this step.
          lmoments = thisstep (it           ,itmomnts,  NCONTROL) .or.
      &              thiszbeam(zbeaml,zbeamr,zzmomnts,  NCONTROL) .or.
      &              thistime (time1 ,time2 ,ttmomnts,  NCONTROL)
-         if (nhist /= 0) then
+         if (nhist > 0) then
             lhist  = mod(it,nhist) == 0
          else
             lhist  = .false.
