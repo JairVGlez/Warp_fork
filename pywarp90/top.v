@@ -1196,7 +1196,7 @@ pboundnz                  integer /2/
 pboundxy                  integer /0/
    # boundary condition for particles at x and y (absorb/dirichlet: absorption, 
    # reflect/neumann: reflection, periodic: periodicity)
-pbounds(0:5) integer /6*0/ # Type of boundaries at edge of mesh for particles,
+pbounds(0:5) integer /6*-1/ # Type of boundaries at edge of mesh for particles,
                            # in order of lower, upper for x, y, z.
 ibpush                    integer /1/
    # Specifies type of B-advance: 0-none, 1-fast, 2-with tan(alpha)/alpha

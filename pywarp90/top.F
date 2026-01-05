@@ -2904,6 +2904,125 @@ c  Converts v to u, sets inverse gamma factor for all particles
       return
       end
 c=============================================================================
+      subroutine particleboundaries(axis, pgroup, js1, js2, zmmax, zmmin, lcountaslost,
+     &                              labs, lrz, pbound0, pboundn)
+      use ParticleGroupmodule
+      use GlobalVars
+      use InPart
+      use Picglb,Only: zgrid
+      use Subcycling,Only: ndtstorho,zgridndts
+      integer(ISZ):: axis
+      type(ParticleGroup):: pgroup
+      integer(ISZ):: js1, js2
+      real(kind=8):: zmmax, zmmin
+      logical(ISZ):: lcountaslost, labs, lrz
+      integer(ISZ):: pbound0, pboundn
+
+c  Impose boundary conditions
+
+      real(kind=8):: syslen
+      real(kind=8):: ztemp, zg
+      real(kind=8):: zmming, zmmaxg
+      integer(ISZ):: is,ip,indts
+      real(kind=8), pointer:: zz(:), uz(:)
+
+      if (axis == 0) then
+        zz => pgroup%xp
+        uz => pgroup%uxp
+      else if (axis == 1) then
+        zz => pgroup%yp
+        uz => pgroup%uyp
+      else if (axis == 2) then
+        zz => pgroup%zp
+        uz => pgroup%uzp
+      endif
+
+      syslen = zmmax - zmmin
+
+      do is = js1 + 1, js2 + 1
+
+        if (axis == 2) then
+          indts = ndtstorho(pgroup%ndts(is-1))
+          if (indts > -1) then
+            zg = zgridndts(indts)
+          else
+            zg = zgrid
+          endif
+        else
+          zg = 0.
+        endif
+
+        zmming = zmmin + zg
+        zmmaxg = zmmax + zg
+
+        if (pboundn == periodic) then
+
+          if (.not. pgroup%ldts(is-1) .or. .not. pgroup%lboundaries(is-1)) cycle
+
+          do ip = pgroup%ins(is), pgroup%ins(is) + pgroup%nps(is) - 1
+
+            if (labs) then
+              ztemp = abs(zz(ip))
+            else
+              ztemp = zz(ip)
+            endif
+
+            if (ztemp < zmming .or. ztemp >= zmmaxg) then
+              zz(ip) = zz(ip) + syslen*int((zmmaxg - zz(ip))/syslen)
+            endif
+
+          enddo
+
+        else
+
+          do ip = pgroup%ins(is), pgroup%ins(is) + pgroup%nps(is) - 1
+
+            if (lrz) then
+              ztemp = sqrt(pgroup%xp(ip)**2 + pgroup%yp(ip)**2)
+            else if (labs) then
+              ztemp = abs(zz(ip))
+            else
+              ztemp = zz(ip)
+            endif
+
+            if (ztemp <= zmming) then
+
+              if (pbound0 == absorb) then
+                pgroup%gaminv(ip) = 0.
+                if (.not. lcountaslost) pgroup%gaminv(ip) = -1.
+              else if (pbound0 == reflect) then
+                zz(ip) = 2.*zmming - zz(ip)
+                uz(ip) = -uz(ip)
+              endif
+
+            else if (ztemp >= zmmaxg) then
+
+              if (pboundn == absorb) then
+                pgroup%gaminv(ip) = 0.
+                if (.not. lcountaslost) pgroup%gaminv(ip) = -1.
+              else if (pboundn == reflect) then
+                if (ztemp > zmmaxg) then
+                  zz(ip) = 2.*zmmaxg - zz(ip)
+                else ! xp == zmmaxg
+c                 --- Shift the particle in bounds by a number that is small
+c                 --- compared to the dimensions of the grid.
+                  zz(ip) = zmmaxg - (zmmaxg - zmming)*1.e-12
+                endif
+              endif
+
+            endif
+
+          enddo  ! loop over particles
+
+        endif  ! periodic or not
+
+      enddo  ! loop over species
+
+c --- end of ifelse above for parallel version.
+
+      return
+      end
+c=============================================================================
       subroutine xparticleboundaries(pgroup,js1,js2,xmmax,xmmin,lcountaslost,
      &                               labs,lrz)
       use ParticleGroupmodule
@@ -2922,6 +3041,18 @@ c  Impose boundary conditions on xp
       real(kind=8):: syslen
       real(kind=8):: rrsq,rr,rrin
       integer(ISZ):: is,ip,indts
+      integer(ISZ):: pbound0x, pboundnx
+
+      if (pbounds(0) >= 0) then
+        pbound0x = pbounds(0)
+      else
+        pbound0x = pboundxy
+      endif
+      if (pbounds(1) >= 0) then
+        pboundnx = pbounds(1)
+      else
+        pboundnx = pboundxy
+      endif
 
 c Parallel version makes call to special routine particleboundaries_parallel,
 c but only if the x direction is domain decomposed.
@@ -2929,109 +3060,13 @@ c but only if the x direction is domain decomposed.
       if (nxprocs > 1) then
         call particleboundaries_parallel(0,pgroup,js1,js2,
      &                                   xmmax,xmmin,xpmaxlocal,xpminlocal,
-     &                                   pboundxy,pboundxy,
+     &                                   pbound0x,pboundnx,
      &                                   lcountaslost,labs,lrz)
       else
 #endif
 
-      if (pboundxy==periodic) then
-
-c       --- periodic boundary condition
-        syslen = xmmax - xmmin
-        do is=js1+1,js2+1
-          if (.not. pgroup%ldts(is-1) .or. .not. pgroup%lboundaries(is-1)) cycle
-          do ip=pgroup%ins(is),pgroup%ins(is)+pgroup%nps(is)-1
-            if (pgroup%xp(ip) < xmmin) then
-              pgroup%xp(ip) = pgroup%xp(ip) +
-     &                      syslen*int((xmmax - pgroup%xp(ip))/syslen)
-            endif
-            if (pgroup%xp(ip) >= xmmax) then
-              pgroup%xp(ip) = pgroup%xp(ip) -
-     &                      syslen*int((pgroup%xp(ip) - xmmin)/syslen)
-            endif
-          enddo
-        enddo
-
-      elseif(pboundxy==absorb) then
-
-c       --- particles absorbed (Dirichlet)
-        if (lrz) then
-
-          do is=js1+1,js2+1
-            if (.not. pgroup%ldts(is-1) .or. .not. pgroup%lboundaries(is-1)) cycle
-            do ip=pgroup%ins(is),pgroup%ins(is)+pgroup%nps(is)-1
-              rrsq = pgroup%xp(ip)**2 + pgroup%yp(ip)**2
-              if (rrsq > xmmax**2) then
-                pgroup%gaminv(ip) = 0.
-                if (.not. lcountaslost) pgroup%gaminv(ip) = -1.
-              endif
-            enddo
-          enddo
-
-        else
-
-          do is=js1+1,js2+1
-            if (.not. pgroup%ldts(is-1) .or. .not. pgroup%lboundaries(is-1)) cycle
-            do ip=pgroup%ins(is),pgroup%ins(is)+pgroup%nps(is)-1
-              if (pgroup%xp(ip) <= xmmin .or. pgroup%xp(ip) >= xmmax) then
-                pgroup%gaminv(ip) = 0.
-                if (.not. lcountaslost) pgroup%gaminv(ip) = -1.
-              endif
-            enddo
-          enddo
-
-        endif
-
-      elseif(pboundxy==reflect) then
-
-        if (lrz) then
-
-          do is=js1+1,js2+1
-            if (.not. pgroup%ldts(is-1) .or. .not. pgroup%lboundaries(is-1)) cycle
-            do ip=pgroup%ins(is),pgroup%ins(is)+pgroup%nps(is)-1
-              rrsq = pgroup%xp(ip)**2 + pgroup%yp(ip)**2
-              if (rrsq >= xmmax**2) then
-                rr = sqrt(rrsq)
-                if (rrsq > xmmax**2) then
-                  pgroup%xp(ip) = (2.*xmmax - rr)*(pgroup%xp(ip)/rr)
-                  pgroup%yp(ip) = (2.*xmmax - rr)*(pgroup%yp(ip)/rr)
-                else ! rrsq == xmmax**2
-c                 --- Shift the particle in bounds by a number that is small
-c                 --- compared to the dimensions of the grid.
-                  rrin = xmmax - (xmmax - xmmin)*1.e-12
-                  pgroup%xp(ip) = rrin*(pgroup%xp(ip)/rr)
-                  pgroup%yp(ip) = rrin*(pgroup%yp(ip)/rr)
-                endif
-                pgroup%uxp(ip) = -pgroup%uxp(ip)
-                pgroup%uyp(ip) = -pgroup%uyp(ip)
-              endif
-            enddo
-          enddo
-
-        else
-
-          do is=js1+1,js2+1
-            if (.not. pgroup%ldts(is-1) .or. .not. pgroup%lboundaries(is-1)) cycle
-            do ip=pgroup%ins(is),pgroup%ins(is)+pgroup%nps(is)-1
-              if (pgroup%xp(ip) >= xmmax) then
-                if (pgroup%xp(ip) > xmmax) then
-                  pgroup%xp(ip) = 2.*xmmax - pgroup%xp(ip)
-                else ! xp == xmmax
-c                 --- Shift the particle in bounds by a number that is small
-c                 --- compared to the dimensions of the grid.
-                  pgroup%xp(ip) = xmmax - (xmmax - xmmin)*1.e-12
-                endif
-                pgroup%uxp(ip) = -pgroup%uxp(ip)
-              elseif (pgroup%xp(ip) < xmmin) then
-                pgroup%xp(ip) = 2.*xmmin - pgroup%xp(ip)
-                pgroup%uxp(ip) = -pgroup%uxp(ip)
-              endif
-            enddo
-          enddo
-
-        endif
-
-      endif
+        call particleboundaries(0, pgroup, js1, js2, xmmax, xmmin, lcountaslost,
+     &                          labs, lrz, pbound0x, pboundnx)
 
 #ifdef MPIPARALLEL
 c       --- End of if block for nxprocs == 1.
@@ -3060,6 +3095,18 @@ c  Impose boundary conditions on yp
 
       real(kind=8):: syslen
       integer(ISZ):: is,ip,indts
+      integer(ISZ):: pbound0y, pboundny
+
+      if (pbounds(2) >= 0) then
+        pbound0y = pbounds(2)
+      else
+        pbound0y = pboundxy
+      endif
+      if (pbounds(3) >= 0) then
+        pboundny = pbounds(3)
+      else
+        pboundny = pboundxy
+      endif
 
 c     --- With radial geometry, the boundary conditions are handled by
 c     --- xparticleboundaries, so nothing is needed here.
@@ -3077,58 +3124,8 @@ c but only if the y direction is domain decomposed.
       else
 #endif
 
-      if (pboundxy==periodic) then
-c     --- periodic boundary condition
-        syslen = ymmax - ymmin
-        do is=js1+1,js2+1
-          if (.not. pgroup%ldts(is-1) .or. .not. pgroup%lboundaries(is-1)) cycle
-          do ip=pgroup%ins(is),pgroup%ins(is)+pgroup%nps(is)-1
-            if (pgroup%yp(ip) < ymmin) then
-              pgroup%yp(ip) = pgroup%yp(ip) +
-     &                      syslen*int((ymmax - pgroup%yp(ip))/syslen)
-            endif
-            if (pgroup%yp(ip) >= ymmax) then
-              pgroup%yp(ip) = pgroup%yp(ip) -
-     &                      syslen*int((pgroup%yp(ip) - ymmin)/syslen)
-            endif
-          enddo
-        enddo
-
-      elseif(pboundxy==absorb) then
-
-c       --- particles absorbed (Dirichlet)
-      do is=js1+1,js2+1
-          if (.not. pgroup%ldts(is-1) .or. .not. pgroup%lboundaries(is-1)) cycle
-          do ip=pgroup%ins(is),pgroup%ins(is)+pgroup%nps(is)-1
-            if (pgroup%yp(ip) <= ymmin .or. pgroup%yp(ip) >= ymmax) then
-              pgroup%gaminv(ip) = 0.
-              if (.not. lcountaslost) pgroup%gaminv(ip) = -1.
-            endif
-          enddo
-        enddo
-
-      elseif(pboundxy==reflect) then
-
-        do is=js1+1,js2+1
-          if (.not. pgroup%ldts(is-1) .or. .not. pgroup%lboundaries(is-1)) cycle
-          do ip=pgroup%ins(is),pgroup%ins(is)+pgroup%nps(is)-1
-            if (pgroup%yp(ip) >= ymmax) then
-              if (pgroup%yp(ip) > ymmax) then
-                pgroup%yp(ip) = 2.*ymmax - pgroup%yp(ip)
-              else ! yp == ymmax
-c               --- Shift the particle in bounds by a number that is small
-c               --- compared to the dimensions of the grid.
-                pgroup%yp(ip) = ymmax - (ymmax - ymmin)*1.e-12
-              endif
-              pgroup%uyp(ip) = -pgroup%uyp(ip)
-            elseif (pgroup%yp(ip) < ymmin) then
-              pgroup%yp(ip) = 2.*ymmin - pgroup%yp(ip)
-              pgroup%uyp(ip) = -pgroup%uyp(ip)
-            endif
-          enddo
-        enddo
-
-      endif
+        call particleboundaries(1, pgroup, js1, js2, ymmax, ymmin, lcountaslost,
+     &                          labs, lskipy, pbound0y, pboundny)
 
 #ifdef MPIPARALLEL
 c       --- End of if block for nyprocs == 1.
@@ -3161,6 +3158,18 @@ c  --- only ever happen if this is called before a generate had been done.
 
       real(kind=8):: syslen,zg
       integer(ISZ):: is,ip,indts
+      integer(ISZ):: pbound0z, pboundnzt
+
+      if (pbounds(4) >= 0) then
+        pbound0z = pbounds(4)
+      else
+        pbound0z = pbound0
+      endif
+      if (pbounds(5) >= 0) then
+        pboundnzt = pbounds(5)
+      else
+        pboundnzt = pboundnz
+      endif
 
 c Parallel version makes call to special routine particleboundaries_parallel,
 c but only if the z direction is domain decomposed.
@@ -3168,72 +3177,13 @@ c but only if the z direction is domain decomposed.
       if (nzprocs > 1) then
         call particleboundaries_parallel(2,pgroup,js1,js2,
      &                                   zmmax,zmmin,zpmaxlocal,zpminlocal,
-     &                                   pbound0,pboundnz,
+     &                                   pbound0,pboundnzt,
      &                                   lcountaslost,.false.,.false.)
       else
 #endif
 
-      if (pbound0==periodic) then
-c     --- periodic boundary condition
-        syslen = zmmax - zmmin
-        do is=js1+1,js2+1
-          if (.not. pgroup%ldts(is-1) .or. .not. pgroup%lboundaries(is-1)) cycle
-          indts = ndtstorho(pgroup%ndts(is-1))
-          if (indts > -1) then
-            zg = zgridndts(indts)
-          else
-            zg = zgrid
-          endif
-
-          do ip=pgroup%ins(is),pgroup%ins(is)+pgroup%nps(is)-1
-            if (pgroup%zp(ip) < zg + zmmin) then
-              pgroup%zp(ip) = pgroup%zp(ip) +
-     &                      syslen*int((zg + zmmax - pgroup%zp(ip))/syslen)
-            endif
-            if (pgroup%zp(ip) >= zg + zmmax) then
-              pgroup%zp(ip) = pgroup%zp(ip) -
-     &                      syslen*int((pgroup%zp(ip) - zg - zmmin)/syslen)
-            endif
-          enddo
-        enddo
-
-      else
-c     --- other boundary condition (particles absorbed or reflected)
-        do is=js1+1,js2+1
-          if (.not. pgroup%ldts(is-1) .or. .not. pgroup%lboundaries(is-1)) cycle
-          indts = ndtstorho(pgroup%ndts(is-1))
-          if (indts > -1) then
-            zg = zgridndts(indts)
-          else
-            zg = zgrid
-          endif
-          do ip=pgroup%ins(is),pgroup%ins(is)+pgroup%nps(is)-1
-            if ((pgroup%zp(ip)-zg) >= zmmax) then
-              if(pboundnz==absorb) then
-                pgroup%gaminv(ip) = 0.
-                if (.not. lcountaslost) pgroup%gaminv(ip) = -1.
-              elseif(pboundnz==reflect) then
-                if ((pgroup%zp(ip)-zg) > zmmax) then
-                  pgroup%zp(ip) = 2.*zg + 2.*zmmax - pgroup%zp(ip)
-                else ! zp-zg == zmmax
-c               --- Shift the particle in bounds by a number that is small
-c               --- compared to the dimensions of the grid.
-                  pgroup%zp(ip) = zg + zmmax - (zmmax - zmmin)*1.e-12
-                endif
-                pgroup%uzp(ip) = -pgroup%uzp(ip)
-              end if
-            elseif ((pgroup%zp(ip)-zg) <= zmmin) then
-              if(pbound0==absorb) then
-                pgroup%gaminv(ip) = 0.
-                if (.not. lcountaslost) pgroup%gaminv(ip) = -1.
-              elseif(pbound0==reflect) then
-                pgroup%zp(ip) = 2.*zg + 2.*zmmin - pgroup%zp(ip)
-                pgroup%uzp(ip) = -pgroup%uzp(ip)
-              end if
-            endif
-          enddo
-        enddo
-      endif
+        call particleboundaries(2, pgroup, js1, js2, zmmax, zmmin, lcountaslost,
+     &                          .false., .false., pbound0z, pboundnz)
 
 #ifdef MPIPARALLEL
 c       --- End of if block for nzprocs == 1.
