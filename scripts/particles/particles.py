@@ -165,13 +165,13 @@ def getattrwithsuffix(object=top, name=None, suffix='', checkmain=1, pkg='top',
             return result
         except (AttributeError, KeyError):
             pass
-    if type(object) is DictionaryType:
+    if isinstance(object, dict):
         try:
             result = object[name + suffix]
             return result
         except KeyError:
             pass
-    if type(object) is InstanceType and object.__class__ is PR.PR:
+    if isinstance(object, PR.PR):
         # --- Try to get data from a pdb file that was written as part of the
         # --- specified package.
         try:
