@@ -1456,14 +1456,15 @@ def getke(iw=0, js=0, jslist=None, gather=1, bcast=None, **kw):
         np=ii.size
         nptot += np
         mass = masses[js]
+        ux = take(getattrwithsuffix(pgroup, 'uxp', suffix), ii)
+        uy = take(getattrwithsuffix(pgroup, 'uyp', suffix), ii)
+        uz = take(getattrwithsuffix(pgroup, 'uzp', suffix), ii)
+        usq = ux**2 + uy**2 + uz**2
         if top.lrelativ:
             gamma = 1./take(getattrwithsuffix(pgroup, 'gaminv', suffix), ii)
-            kes = (gamma - 1.)*mass*clight**2/echarge
         else:
-            vx = take(getattrwithsuffix(pgroup, 'uxp', suffix), ii)
-            vy = take(getattrwithsuffix(pgroup, 'uyp', suffix), ii)
-            vz = take(getattrwithsuffix(pgroup, 'uzp', suffix), ii)
-            kes = 0.5*mass*(vx**2 + vy**2 + vz**2)/echarge
+            gamma = 1.
+        kes = usq/(1. + gamma)*mass/jperev
         kel.append(kes[:np])
     if nptot == 0:
         ke = array([], 'd')
