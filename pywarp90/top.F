@@ -4327,6 +4327,10 @@ c     --- Make sure that 'is' is within the correct range
         return
       endif
 
+c     --- Get global species number
+      isid = pgroup%sid(is-1) + 1
+      if (isid == 0) return
+
       if (lsavelostpart) then
 
 c       --- Make sure that if npid has changed, then npidlost is also
@@ -4343,11 +4347,12 @@ c       --- enough space to save them in the LostParticles arrays.
         nlost = count(pgroup%gaminv(i1:i2)==0.)
         call chcklostpart(is,0,nlost)
 
-      endif
+c       --- Make sure that the species parameters are saved
+        smlost(isid) = pgroup%sm(is)
+        sqlost(isid) = pgroup%sq(is)
+        swlost(isid) = pgroup%sw(is)
 
-c     --- Get global species number
-      isid = pgroup%sid(is-1) + 1
-      if (isid == 0) return
+      endif
 
 c     --- Check lspeciesmoments, since it affects lostpars
       call checkz_arrays(ns)

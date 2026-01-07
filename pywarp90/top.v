@@ -2751,6 +2751,9 @@ npidlost            integer /1/ # Number of columns in pidlist
 lostpartchunksize   integer /1000/
 inslost(ns)        _integer /0/ # Index of first lost particles of species
 npslost(ns)        _integer /0/ # Number of lost particles in species
+smlost(ns)         _real [kg]   # Mass of lost particle species
+sqlost(ns)         _real [e]    # Charge of lost particle species
+swlost(ns)         _real [e]    # Weight of lost particle species
 gaminvlost(npmaxlost) _real [1] # gamma inverse of lost particles
 xplost(npmaxlost)  _real [m]    # X-positions of lost particles
 yplost(npmaxlost)  _real [m]    # Y-positions of lost particles
