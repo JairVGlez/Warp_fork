@@ -84,3 +84,7 @@ def pyg_idler(*x, **xx):
     pass
 def gridxy(*x, **xx):
     pass
+def get_style():
+    return {'systems':[]}
+def set_style(*x, **xx):
+    pass
