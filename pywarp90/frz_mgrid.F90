@@ -3570,10 +3570,13 @@ END subroutine relaxbndxzwguard
     REAL(8), INTENT(IN OUT) :: f(0:,0:)!f(0:nr+2,0:nz+2)
     INTEGER(ISZ), INTENT(IN) :: izlbnd, izrbnd
 
-    INTEGER(MPIISZ) :: nr,nz
-    INTEGER(MPIISZ) :: p_up, p_down, nsize
-    integer(MPIISZ) :: mpi_req(2*nprocsrz+2),mpistatus(MPI_STATUS_SIZE,2*nprocsrz+2),mpierror,ir
-    comm_world_mpiisz = comm_world
+    INTEGER(MPI_INTEGER_KIND) :: nr,nz
+    INTEGER(MPI_INTEGER_KIND) :: p_up, p_down, nsize
+    type(MPI_REQUEST) :: mpi_req(2*nprocsrz+2)
+    type(MPI_STATUS) :: mpistatus(2*nprocsrz+2)
+    integer(MPI_INTEGER_KIND) :: mpierror,ir
+    !comm_world_mpiisz = comm_world
+    comm_world_mpiisz = MPI_COMM_WORLD
 
     
 !    write(o_line,*) my_index,':enter exchangefbnd'
@@ -3613,7 +3616,7 @@ END subroutine relaxbndxzwguard
 !      call remark(trim(o_line))
     end if
 
-    if(ir>0 .and. l_mpi_barriers) call MPI_WAITALL(ir,mpi_req(1:ir),mpistatus(:,1:ir),mpierror)
+    if(ir>0 .and. l_mpi_barriers) call MPI_WAITALL(ir,mpi_req(1:ir),mpistatus(1:ir),mpierror)
 
   end subroutine exchange_fbndz
 
@@ -3622,12 +3625,15 @@ END subroutine relaxbndxzwguard
     REAL(8), INTENT(IN OUT) :: f(0:,0:)!f(0:nr+2,0:nz+2)
     INTEGER(ISZ), INTENT(IN) :: izlbnd, izrbnd, izf
 
-    INTEGER(MPIISZ) :: nr,nz
-    INTEGER(MPIISZ) :: p_up, p_down
-    integer(MPIISZ) :: mpi_req(4),mpistatus(MPI_STATUS_SIZE,4),mpierror,ir
+    INTEGER(MPI_INTEGER_KIND) :: nr,nz
+    INTEGER(MPI_INTEGER_KIND) :: p_up, p_down
+    integer(MPI_INTEGER_KIND) :: mpierror,ir
+    type(MPI_REQUEST) :: mpi_req(4)
+    type(MPI_STATUS) :: mpistatus(4)
 
     real(8), allocatable, dimension(:) :: ftmpd, ftmpu, ftmpds, ftmpus
-    comm_world_mpiisz = comm_world
+    !comm_world_mpiisz = comm_world
+    comm_world_mpiisz = MPI_COMM_WORLD
     
     ! exchange_fbndz_rb should be more efficient than exchange_fbndz since it is 
     ! exchanging only half the data but is not correct for all the cases in the 
@@ -3701,7 +3707,7 @@ END subroutine relaxbndxzwguard
     REAL(8), INTENT(IN OUT) :: f(0:,0:)!f(0:nr+2,0:nz+2)
     INTEGER(ISZ), INTENT(IN) :: izlbnd, izrbnd
 
-    INTEGER(MPIISZ) :: nr,nz,i
+    INTEGER(MPI_INTEGER_KIND) :: nr,nz,i
     INTEGER(ISZ) :: p_up, p_down
 
     REAL(8), DIMENSION(0:SIZE(f,1)-1) :: fr,fl
@@ -3754,11 +3760,14 @@ END subroutine relaxbndxzwguard
     REAL(8), INTENT(IN OUT) :: rho(1:,1:)!rho(1:nr+1,1:nz+1)
     INTEGER(ISZ), INTENT(IN) :: izlbnd, izrbnd
 
-    INTEGER(MPIISZ) :: nr,nz
-    INTEGER(MPIISZ) :: p_up, p_down
-    integer(MPIISZ) :: mpi_req(4),mpistatus(MPI_STATUS_SIZE,4),mpierror,ir,j
+    INTEGER(MPI_INTEGER_KIND) :: nr,nz
+    INTEGER(MPI_INTEGER_KIND) :: p_up, p_down
+    integer(MPI_INTEGER_KIND) :: mpierror,ir,j
+    type(MPI_REQUEST) :: mpi_req(4)
+    type(MPI_STATUS) :: mpistatus(4)
     real(8), allocatable, dimension(:) :: fd, fu
-    comm_world_mpiisz = comm_world
+    !comm_world_mpiisz = comm_world
+    comm_world_mpiisz = MPI_COMM_WORLD
 
 !    write(o_line,*) my_index,':enter exchangeres'
 !    call remark(trim(o_line))
@@ -3819,10 +3828,13 @@ END subroutine relaxbndxzwguard
     REAL(8), INTENT(IN OUT) :: f(1:,1:)!f(1:nr+1,1:nz+1)
     INTEGER(ISZ), INTENT(IN) :: level, izlbnd, izrbnd
 
-    INTEGER(MPIISZ) :: nz, p_up, p_down, j, nr
-    integer(MPIISZ) :: mpi_req(2),mpistatus(MPI_STATUS_SIZE,2),mpierror,ir
+    INTEGER(MPI_INTEGER_KIND) :: nz, p_up, p_down, j, nr
+    integer(MPI_INTEGER_KIND) :: mpierror,ir
+    type(MPI_REQUEST) :: mpi_req(2)
+    type(MPI_STATUS) :: mpistatus(2)
     real(8), allocatable, dimension(:,:) :: fd, fu
-    comm_world_mpiisz = comm_world
+    !comm_world_mpiisz = comm_world
+    comm_world_mpiisz = MPI_COMM_WORLD
 
 !    write(o_line,*) my_index,':enter merge'
 !    call remark(trim(o_line))
@@ -4752,7 +4764,7 @@ has_diverged = .false.
         maxerr = maxval(abs(grid%phi-uold))
       END if
 #ifdef MPIPARALLEL
-      if(grid%l_parallel) maxerr = mpi_global_compute_real(maxerr,int(MPI_MAX,MPIISZ))
+      if(grid%l_parallel) maxerr = mpi_global_compute_real(maxerr,MPI_MAX)
 #endif
       IF(maxerr <= accuracy) then
         do_calc=.false.
@@ -4935,7 +4947,7 @@ has_diverged = .false.
       maxerr_old = maxerr
       maxerr = maxval(abs(grid%phi-uold))
 #ifdef MPIPARALLEL
-      if (grid%l_parallel) maxerr = mpi_global_compute_real(maxerr,int(MPI_MAX,MPIISZ))
+      if (grid%l_parallel) maxerr = mpi_global_compute_real(maxerr,MPI_MAX)
 #endif
       IF(maxerr <= accuracy) then
         do_calc=.false.
@@ -5201,7 +5213,7 @@ REAL(8), EXTERNAL :: wtime
   aftertime = wtime()
   time_field_solve_orig = aftertime - beforetime
 #ifdef MPIPARALLEL
-  if(grid%l_parallel) time_field_solve_orig = mpi_global_compute_real(time_field_solve_orig,int(MPI_MAX,MPIISZ))
+  if(grid%l_parallel) time_field_solve_orig = mpi_global_compute_real(time_field_solve_orig,MPI_MAX)
 #endif
 
   return
@@ -5252,7 +5264,7 @@ REAL(8), EXTERNAL :: wtime
   aftertime = wtime()
   time_field_solve = (time_field_solve+ aftertime - beforetime)/n
 #ifdef MPIPARALLEL
-  if(grid%l_parallel) time_field_solve = mpi_global_compute_real(time_field_solve,int(MPI_MAX,MPIISZ))
+  if(grid%l_parallel) time_field_solve = mpi_global_compute_real(time_field_solve,MPI_MAX)
 #endif
 
   return
@@ -8063,12 +8075,14 @@ TYPE(GRIDtype) :: grid
 
 INTEGER(ISZ) :: i, ilg, iug, ilp, iup, il, iu, j, l, ii, ll, jex, lex
 
-integer(MPIISZ):: mpistatus(MPI_STATUS_SIZE)
-INTEGER(MPIISZ):: mpirequest,mpierror
+type(MPI_STATUS) :: mpistatus
+type(MPI_REQUEST):: mpirequest
+INTEGER(MPI_INTEGER_KIND):: mpierror
 
 logical(ISZ) :: testthis=.false.
 INTEGER(ISZ), ALLOCATABLE :: wz(:)
-comm_world_mpiisz = comm_world
+!comm_world_mpiisz = comm_world
+comm_world_mpiisz = MPI_COMM_WORLD
 
 
 !write(o_line,*) my_index,'Enter get_rho_from_rhop'
@@ -8119,8 +8133,8 @@ do i = 0, nprocsrz-1
     il = MAX(ilg,ilp)-ilp+1
     iu = MIN(iug,iup)-ilp+1
     IF(il>iu) cycle
-    call mpi_isend(grid%rhop(1,il),int(SIZE(grid%rhop(:,il:iu)),4), &
-                   mpi_double_precision,int(i,4),0_4,comm_world_mpiisz, &
+    call mpi_isend(grid%rhop(1,il),int(SIZE(grid%rhop(:,il:iu)),MPI_INTEGER_KIND), &
+                   mpi_double_precision,int(i,MPI_INTEGER_KIND),int(0,MPI_INTEGER_KIND),comm_world_mpiisz, &
                    mpirequest,ierr)
 !    write(o_line,*) my_index,'send to',i
 !    call remark(trim(o_line))
@@ -8227,11 +8241,13 @@ implicit none
 TYPE(GRIDtype) :: grid
 
 INTEGER(ISZ) :: i, ilg, iug, ilp, iup, il, iu, j,l, ll, jex, lex, testeq
-integer(MPIISZ):: mpistatus(MPI_STATUS_SIZE)
-INTEGER(MPIISZ):: mpirequest,mpierror
+type(MPI_STATUS) :: mpistatus
+type(MPI_REQUEST):: mpirequest
+INTEGER(MPI_INTEGER_KIND):: mpierror
 
 logical(ISZ) :: testthis=.false.
-comm_world_mpiisz = comm_world
+!comm_world_mpiisz = comm_world
+comm_world_mpiisz = MPI_COMM_WORLD
 
 !write(o_line,*) my_index,'Enter get_phip_from_phi'
 !call remark(trim(o_line))
@@ -8277,8 +8293,8 @@ do i = 0, nprocsrz-1
     il = MAX(ilg,ilp)-ilg
     iu = MIN(iug,iup)-ilg
     IF(il>iu) cycle
-    call mpi_isend(grid%phi(0,il),int(SIZE(grid%phi(:,il:iu)),4), &
-                   mpi_double_precision,int(i,4),0_4,comm_world_mpiisz, &
+    call mpi_isend(grid%phi(0,il),int(SIZE(grid%phi(:,il:iu)),MPI_INTEGER_KIND), &
+                   mpi_double_precision,int(i,MPI_INTEGER_KIND),int(0,MPI_INTEGER_KIND),comm_world_mpiisz, &
                    mpirequest,ierr)
 !    write(o_line,*) my_index,'send to',i
 !    call remark(trim(o_line))

@@ -3,14 +3,15 @@
 #include "top.h"
 module mpirz
 use Parallel
-use mpi
-INTEGER(MPIISZ) :: ierr, length, temp
+use mpi_f08
+INTEGER(MPI_INTEGER_KIND) :: ierr, length, temp
 CHARACTER( LEN = MPI_MAX_ERROR_STRING ) :: message
-INTEGER(MPIISZ) :: mpirequests(1000),mpireqpnt=0
-INTEGER(MPIISZ) :: comm_world_mpiisz
+type(MPI_REQUEST) :: mpirequests(1000)
+INTEGER(MPI_INTEGER_KIND)::mpireqpnt=0
+type(MPI_COMM) :: comm_world_mpiisz
 type mpibuffertype
-  integer(MPIISZ) :: pack_pos=0
-  integer(MPIISZ) :: pack_size=0
+  integer(MPI_INTEGER_KIND) :: pack_pos=0
+  integer(MPI_INTEGER_KIND) :: pack_size=0
   integer*8, allocatable :: buffer(:)
   logical(ISZ) :: l_allocated=.false.
 end type mpibuffertype
@@ -73,8 +74,9 @@ contains
  SUBROUTINE mpi_send_int_scalar(i, tid, tag)
   IMPLICIT NONE
   INTEGER(ISZ), INTENT(IN) :: TID, i, tag
-  comm_world_mpiisz = comm_world
-  call mpi_send(i,int(1,MPIISZ),mpi_integer,int(tid,MPIISZ),int(tag,MPIISZ),comm_world_mpiisz,ierr)
+  !comm_world_mpiisz = comm_world
+  comm_world_mpiisz = MPI_COMM_WORLD
+  call mpi_send(i,int(1,MPI_INTEGER_KIND),mpi_integer,int(tid,MPI_INTEGER_KIND),int(tag,MPI_INTEGER_KIND),comm_world_mpiisz,ierr)
   if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_send_int_scalar: ', message(1:length)
@@ -84,8 +86,10 @@ contains
  SUBROUTINE mpi_send_int_array(i, tid, tag)
   IMPLICIT NONE
   INTEGER(ISZ), INTENT(IN) :: TID, i(:), tag
-  comm_world_mpiisz = comm_world
-  call mpi_send(i,int(SIZE(i),MPIISZ),mpi_integer,int(tid,MPIISZ),int(tag,MPIISZ),comm_world_mpiisz,ierr)
+  !comm_world_mpiisz = comm_world
+  comm_world_mpiisz = MPI_COMM_WORLD
+  call mpi_send(i,int(SIZE(i),MPI_INTEGER_KIND),mpi_integer,int(tid,MPI_INTEGER_KIND), &
+                int(tag,MPI_INTEGER_KIND),comm_world_mpiisz,ierr)
   if (ierr /= MPI_SUCCESS) then
      call MPI_Error_string( ierr, message, length, temp )
      write(STDOUT,*) '***** Error in mpi_send_int_array: ', message(1:length)
@@ -96,8 +100,10 @@ contains
    implicit none
    INTEGER(ISZ), INTENT(IN) :: tid,tag
    INTEGER(ISZ) :: mpi_recv_int_scalar
-   comm_world_mpiisz = comm_world
-   call mpi_recv(mpi_recv_int_scalar,int(1,MPIISZ),mpi_integer,int(tid,MPIISZ),int(tag,MPIISZ), &
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_recv(mpi_recv_int_scalar,int(1,MPI_INTEGER_KIND),mpi_integer, &
+                 int(tid,MPI_INTEGER_KIND),int(tag,MPI_INTEGER_KIND), &
         comm_world_mpiisz,mpi_status_ignore,ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
@@ -110,9 +116,10 @@ contains
    implicit none
    INTEGER(ISZ), INTENT(IN) :: isize,tid,tag
    INTEGER(ISZ), DIMENSION(isize) :: mpi_recv_int_array
-   comm_world_mpiisz = comm_world
-   call mpi_recv(mpi_recv_int_array,int(isize,MPIISZ),mpi_integer,int(tid,MPIISZ), &
-        int(tag,MPIISZ),comm_world_mpiisz, mpi_status_ignore,ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_recv(mpi_recv_int_array,int(isize,MPI_INTEGER_KIND),mpi_integer,int(tid,MPI_INTEGER_KIND), &
+        int(tag,MPI_INTEGER_KIND),comm_world_mpiisz, mpi_status_ignore,ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_recv_int_array: ', message(1:length)
@@ -124,8 +131,10 @@ contains
   IMPLICIT NONE
   INTEGER(ISZ), INTENT(IN) :: TID, tag
   REAL(8) :: r
-  comm_world_mpiisz = comm_world
-  call mpi_send(r,int(1,MPIISZ),mpi_double_precision,int(tid,MPIISZ),int(tag,MPIISZ),comm_world_mpiisz,ierr)
+  !comm_world_mpiisz = comm_world
+  comm_world_mpiisz = MPI_COMM_WORLD
+  call mpi_send(r,int(1,MPI_INTEGER_KIND),mpi_double_precision,int(tid,MPI_INTEGER_KIND), &
+                int(tag,MPI_INTEGER_KIND),comm_world_mpiisz,ierr)
   if (ierr /= MPI_SUCCESS) then
      call MPI_Error_string( ierr, message, length, temp )
      write(STDOUT,*) '***** Error in mpi_send_real_scalar: ', message(1:length)
@@ -137,9 +146,10 @@ contains
   INTEGER(ISZ), INTENT(IN) :: TID, tag
   REAL(8), DIMENSION(:) :: r
   if (l_mpiverbose) WRITE(0,*) my_index,'send to ',tid
-  comm_world_mpiisz = comm_world
-  call mpi_send(r,int(SIZE(r),MPIISZ),mpi_double_precision,int(tid,MPIISZ), &
-       int(tag,MPIISZ),comm_world_mpiisz,ierr)
+  !comm_world_mpiisz = comm_world
+  comm_world_mpiisz = MPI_COMM_WORLD
+  call mpi_send(r,int(SIZE(r),MPI_INTEGER_KIND),mpi_double_precision,int(tid,MPI_INTEGER_KIND), &
+       int(tag,MPI_INTEGER_KIND),comm_world_mpiisz,ierr)
   if (ierr /= MPI_SUCCESS) then
      call MPI_Error_string( ierr, message, length, temp )
      write(STDOUT,*) '***** Error in mpi_send_real_array: ', message(1:length)
@@ -151,9 +161,10 @@ contains
    implicit none
    INTEGER(ISZ), INTENT(IN) :: tid,tag
    REAL(8) :: mpi_recv_real_scalar
-   comm_world_mpiisz = comm_world
-   call mpi_recv(mpi_recv_real_scalar,int(1,MPIISZ),mpi_double_precision,int(tid,MPIISZ), &
-        int(tag,MPIISZ),comm_world_mpiisz, mpi_status_ignore,ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_recv(mpi_recv_real_scalar,int(1,MPI_INTEGER_KIND),mpi_double_precision,int(tid,MPI_INTEGER_KIND), &
+        int(tag,MPI_INTEGER_KIND),comm_world_mpiisz, mpi_status_ignore,ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_recv_real_scalar: ', message(1:length)
@@ -166,9 +177,10 @@ contains
    INTEGER(ISZ), INTENT(IN) :: isize,tid,tag
    REAL(8), DIMENSION(isize) :: mpi_recv_real_array
      if (l_mpiverbose) WRITE(0,*) my_index,'recv from ',tid,isize
-     comm_world_mpiisz = comm_world
-     call mpi_recv(mpi_recv_real_array,int(isize,MPIISZ),mpi_double_precision,int(tid,MPIISZ), &
-          int(tag,MPIISZ), comm_world_mpiisz, mpi_status_ignore,ierr)
+     !comm_world_mpiisz = comm_world
+     comm_world_mpiisz = MPI_COMM_WORLD
+     call mpi_recv(mpi_recv_real_array,int(isize,MPI_INTEGER_KIND),mpi_double_precision,int(tid,MPI_INTEGER_KIND), &
+          int(tag,MPI_INTEGER_KIND), comm_world_mpiisz, mpi_status_ignore,ierr)
      if (ierr /= MPI_SUCCESS) then
         call MPI_Error_string( ierr, message, length, temp )
         write(STDOUT,*) '***** Error in mpi_recv_real_array: ', message(1:length)
@@ -183,9 +195,10 @@ contains
     REAL(8), DIMENSION(:) :: r
 
 !    WRITE(0,*) 'isend to ',tid,size(r)
-      comm_world_mpiisz = comm_world
-      call mpi_isend(r,int(SIZE(r),MPIISZ),mpi_double_precision,int(tid,MPIISZ), &
-           int(tag,MPIISZ),comm_world_mpiisz,mpirequests(mpireqpnt+1),ierr)
+      !comm_world_mpiisz = comm_world
+      comm_world_mpiisz = MPI_COMM_WORLD
+      call mpi_isend(r,int(SIZE(r),MPI_INTEGER_KIND),mpi_double_precision,int(tid,MPI_INTEGER_KIND), &
+           int(tag,MPI_INTEGER_KIND),comm_world_mpiisz,mpirequests(mpireqpnt+1),ierr)
       mpireqpnt=mpireqpnt+1
       if (ierr /= MPI_SUCCESS) then
         call MPI_Error_string( ierr, message, length, temp )
@@ -198,10 +211,11 @@ contains
     implicit none
     INTEGER(ISZ), INTENT(IN) :: isize,tid,tag
     REAL(8), DIMENSION(isize) :: mpi_irecv_real_array
-      comm_world_mpiisz = comm_world
+      !comm_world_mpiisz = comm_world
+      comm_world_mpiisz = MPI_COMM_WORLD
 !    WRITE(0,*) 'irecv from ',tid
-      call mpi_irecv(mpi_irecv_real_array,int(isize,MPIISZ),mpi_double_precision, &
-           int(tid,MPIISZ),int(tag,MPIISZ), comm_world_mpiisz,mpirequests(mpireqpnt+1),ierr)
+      call mpi_irecv(mpi_irecv_real_array,int(isize,MPI_INTEGER_KIND),mpi_double_precision, &
+           int(tid,MPI_INTEGER_KIND),int(tag,MPI_INTEGER_KIND), comm_world_mpiisz,mpirequests(mpireqpnt+1),ierr)
       mpireqpnt=mpireqpnt+1
       if (ierr /= MPI_SUCCESS) then
          call MPI_Error_string( ierr, message, length, temp )
@@ -214,10 +228,12 @@ contains
   function mpi_global_compute_real(DATA,op)
     implicit none
     REAL(8) :: DATA, mpi_global_compute_real
-    INTEGER(MPIISZ) :: op
-    comm_world_mpiisz = comm_world
-    call mpi_allreduce(data,mpi_global_compute_real,int(1,MPIISZ),mpi_double_precision, &
-         int(op,MPIISZ),comm_world_mpiisz,ierr)
+    type(MPI_Op) :: op
+    REAL(8) :: data_a(1), mpi_global_compute_real_a(1)
+    !comm_world_mpiisz = comm_world
+    comm_world_mpiisz = MPI_COMM_WORLD
+    call mpi_allreduce(data,mpi_global_compute_real,int(1,MPI_INTEGER_KIND),mpi_double_precision, &
+                       op,comm_world_mpiisz,ierr)
     if (ierr /= MPI_SUCCESS) then
        call MPI_Error_string( ierr, message, length, temp )
        write(STDOUT,*) '***** Error in mpi_global_compute_real: ', message(1:length)
@@ -243,8 +259,10 @@ contains
  subroutine mpi_pack_int_scalar(a,ibuf)
    implicit none
    INTEGER(ISZ), INTENT(IN) :: a,ibuf
-   comm_world_mpiisz = comm_world
-   call mpi_pack(a, int(1,MPIISZ), mpi_integer, mpibuffers(ibuf)%buffer, int(8*size(mpibuffers(ibuf)%buffer),MPIISZ), &
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_pack(a, int(1,MPI_INTEGER_KIND), mpi_integer, mpibuffers(ibuf)%buffer, &
+                 int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
         mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
@@ -257,8 +275,10 @@ contains
    implicit none
    integer(ISZ)::ibuf
    INTEGER(ISZ), DIMENSION(:), INTENT(IN) :: a
-   comm_world_mpiisz = comm_world
-   call mpi_pack(a, int(SIZE(a),MPIISZ), mpi_integer, mpibuffers(ibuf)%buffer, int(8*size(mpibuffers(ibuf)%buffer),MPIISZ), &
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_pack(a, int(SIZE(a),MPI_INTEGER_KIND), mpi_integer, mpibuffers(ibuf)%buffer, &
+                 int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
         mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
@@ -271,9 +291,11 @@ contains
    implicit none
    integer(ISZ)::ibuf
    REAL(8), INTENT(IN) :: a
-   comm_world_mpiisz = comm_world
-   call mpi_pack(a, int(1,MPIISZ), mpi_double_precision, mpibuffers(ibuf)%buffer, int(8*size(mpibuffers(ibuf)%buffer), &
-        MPIISZ), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_pack(a, int(1,MPI_INTEGER_KIND), mpi_double_precision, mpibuffers(ibuf)%buffer, &
+                 int(8*size(mpibuffers(ibuf)%buffer), &
+        MPI_INTEGER_KIND), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_pack_real_scalar: ', message(1:length)
@@ -285,9 +307,11 @@ contains
    implicit none
    integer(ISZ)::ibuf
    REAL(8), DIMENSION(:), INTENT(IN) :: a
-   comm_world_mpiisz = comm_world
-   call mpi_pack(a, int(SIZE(a),MPIISZ), mpi_double_precision, mpibuffers(ibuf)%buffer, int(8*size(mpibuffers(ibuf)%buffer), &
-        MPIISZ), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_pack(a, int(SIZE(a),MPI_INTEGER_KIND), mpi_double_precision, mpibuffers(ibuf)%buffer, &
+                 int(8*size(mpibuffers(ibuf)%buffer), &
+        MPI_INTEGER_KIND), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_pack_real_1darray: ', message(1:length)
@@ -299,15 +323,17 @@ contains
    implicit none
    integer(ISZ)::ibuf
    REAL(8), DIMENSION(:,:), INTENT(IN) :: a
-   comm_world_mpiisz = comm_world
-   call mpi_pack(a, int(SIZE(a),MPIISZ), mpi_double_precision, mpibuffers(ibuf)%buffer, int(8*size(mpibuffers(ibuf)%buffer), &
-        MPIISZ), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_pack(a, int(SIZE(a),MPI_INTEGER_KIND), mpi_double_precision, mpibuffers(ibuf)%buffer, &
+                 int(8*size(mpibuffers(ibuf)%buffer), &
+        MPI_INTEGER_KIND), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_pack_real_2array: ', message(1:length)
    endif
    if (l_mpiverbose) &
-        write(STDOUT,*) 'pack_real', mpibuffers(ibuf)%pack_pos, int(size(mpibuffers(ibuf)%buffer),MPIISZ)
+        write(STDOUT,*) 'pack_real', mpibuffers(ibuf)%pack_pos, int(size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND)
    return
  end subroutine mpi_pack_real_2darray
 
@@ -315,9 +341,11 @@ contains
    implicit none
    integer(ISZ)::ibuf
    REAL(8), DIMENSION(:,:,:), INTENT(IN) :: a
-   comm_world_mpiisz = comm_world
-   call mpi_pack(a, int(SIZE(a),MPIISZ), mpi_double_precision, mpibuffers(ibuf)%buffer, int(8*size(mpibuffers(ibuf)%buffer) &
-        ,MPIISZ), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_pack(a, int(SIZE(a),MPI_INTEGER_KIND), mpi_double_precision, mpibuffers(ibuf)%buffer, &
+                 int(8*size(mpibuffers(ibuf)%buffer) &
+        ,MPI_INTEGER_KIND), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_pack_real_3darray: ', message(1:length)
@@ -329,9 +357,11 @@ contains
    implicit none
    integer(ISZ)::ibuf
    COMPLEX(8), DIMENSION(:), INTENT(IN) :: a
-   comm_world_mpiisz = comm_world
-   call mpi_pack(a, int(SIZE(a),MPIISZ), mpi_double_complex, mpibuffers(ibuf)%buffer, int(8*size(mpibuffers(ibuf)%buffer), &
-        MPIISZ), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_pack(a, int(SIZE(a),MPI_INTEGER_KIND), mpi_double_complex, mpibuffers(ibuf)%buffer, &
+                 int(8*size(mpibuffers(ibuf)%buffer), &
+        MPI_INTEGER_KIND), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_pack_complex_1darray: ', message(1:length)
@@ -343,15 +373,17 @@ contains
    implicit none
    integer(ISZ)::ibuf
    COMPLEX(8), DIMENSION(:,:), INTENT(IN) :: a
-   comm_world_mpiisz = comm_world
-   call mpi_pack(a, int(SIZE(a),MPIISZ), mpi_double_complex, mpibuffers(ibuf)%buffer, int(8*size(mpibuffers(ibuf)%buffer), &
-        MPIISZ), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_pack(a, int(SIZE(a),MPI_INTEGER_KIND), mpi_double_complex, mpibuffers(ibuf)%buffer, &
+                 int(8*size(mpibuffers(ibuf)%buffer), &
+        MPI_INTEGER_KIND), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_pack_complex_2darray: ', message(1:length)
    endif
    if (l_mpiverbose) &
-        write(STDOUT,*) 'pack_cmpx', mpibuffers(ibuf)%pack_pos, int(size(mpibuffers(ibuf)%buffer),MPIISZ)     
+        write(STDOUT,*) 'pack_cmpx', mpibuffers(ibuf)%pack_pos, int(size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND)     
    return
  end subroutine mpi_pack_complex_2darray
 
@@ -359,9 +391,11 @@ contains
    implicit none
    integer(ISZ)::ibuf
    COMPLEX(8), DIMENSION(:,:,:), INTENT(IN) :: a
-   comm_world_mpiisz = comm_world
-   call mpi_pack(a, int(SIZE(a),MPIISZ), mpi_double_complex, mpibuffers(ibuf)%buffer, int(8*size(mpibuffers(ibuf)%buffer), &
-        MPIISZ), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_pack(a, int(SIZE(a),MPI_INTEGER_KIND), mpi_double_complex, mpibuffers(ibuf)%buffer, &
+                 int(8*size(mpibuffers(ibuf)%buffer), &
+        MPI_INTEGER_KIND), mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_pack_complex_3darray: ', message(1:length)
@@ -373,8 +407,10 @@ contains
    implicit none
    integer(ISZ)::ibuf
    logical(ISZ), DIMENSION(:,:,:), INTENT(IN) :: a
-   comm_world_mpiisz = comm_world
-     call mpi_pack(a, int(SIZE(a),MPIISZ), mpi_double_precision, mpibuffers(ibuf)%buffer, int(8*size(mpibuffers(ibuf)%buffer),MPIISZ), &
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+     call mpi_pack(a, int(SIZE(a),MPI_INTEGER_KIND), mpi_double_precision, mpibuffers(ibuf)%buffer, &
+                   int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
           mpibuffers(ibuf)%pack_pos, comm_world_mpiisz, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
@@ -387,8 +423,10 @@ contains
    implicit none
    integer(ISZ)::ibuf
    INTEGER(ISZ), INTENT(IN) :: tid,tag
-   comm_world_mpiisz = comm_world
-   call mpi_send(mpibuffers(ibuf)%buffer,mpibuffers(ibuf)%pack_pos,mpi_packed,int(tid,MPIISZ),int(tag,MPIISZ), &
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_send(mpibuffers(ibuf)%buffer,mpibuffers(ibuf)%pack_pos,mpi_packed, &
+                 int(tid,MPI_INTEGER_KIND),int(tag,MPI_INTEGER_KIND), &
         comm_world_mpiisz, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
@@ -401,8 +439,10 @@ contains
    implicit none
    integer(ISZ)::ibuf
    INTEGER(ISZ), INTENT(IN) :: tid,tag
-   comm_world_mpiisz = comm_world
-   call mpi_isend(mpibuffers(ibuf)%buffer,mpibuffers(ibuf)%pack_pos,mpi_packed,int(tid,MPIISZ),int(tag,MPIISZ), &
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_isend(mpibuffers(ibuf)%buffer,mpibuffers(ibuf)%pack_pos,mpi_packed, &
+                 int(tid,MPI_INTEGER_KIND),int(tag,MPI_INTEGER_KIND), &
         comm_world_mpiisz, mpirequests(mpireqpnt+1), ierr)
    mpireqpnt=mpireqpnt+1
    if (ierr /= MPI_SUCCESS) then
@@ -416,9 +456,11 @@ contains
    implicit none
    integer(ISZ)::ibuf
    INTEGER(ISZ), INTENT(IN) :: tid,tag
-   comm_world_mpiisz = comm_world
-   call mpi_recv(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPIISZ),mpi_packed,int(tid,MPIISZ), &
-        int(tag,MPIISZ), comm_world_mpiisz, mpi_status_ignore, ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_recv(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
+                 mpi_packed,int(tid,MPI_INTEGER_KIND), &
+        int(tag,MPI_INTEGER_KIND), comm_world_mpiisz, mpi_status_ignore, ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_recv_pack: ', message(1:length)
@@ -430,9 +472,11 @@ contains
    implicit none
    integer(ISZ)::ibuf
    INTEGER(ISZ), INTENT(IN) :: tid,tag
-   comm_world_mpiisz = comm_world
-   call mpi_irecv(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPIISZ),mpi_packed,int(tid,MPIISZ), &
-        int(tag,MPIISZ), comm_world_mpiisz, mpirequests(mpireqpnt+1), ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_irecv(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
+                 mpi_packed,int(tid,MPI_INTEGER_KIND), &
+        int(tag,MPI_INTEGER_KIND), comm_world_mpiisz, mpirequests(mpireqpnt+1), ierr)
    mpireqpnt=mpireqpnt+1
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
@@ -445,9 +489,11 @@ contains
    implicit none
    integer(ISZ)::ibuf
    INTEGER(ISZ) :: mpi_unpack_int_scalar
-   comm_world_mpiisz = comm_world
-   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPIISZ),mpibuffers(ibuf)%pack_pos, &
-        mpi_unpack_int_scalar, int(1,MPIISZ),mpi_integer,comm_world_mpiisz,ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
+                 mpibuffers(ibuf)%pack_pos, &
+        mpi_unpack_int_scalar, int(1,MPI_INTEGER_KIND),mpi_integer,comm_world_mpiisz,ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_unpack_int_scalar: ', message(1:length)
@@ -460,9 +506,11 @@ contains
    integer(ISZ)::ibuf
    INTEGER(ISZ), INTENT(IN) :: isize
    INTEGER(ISZ), DIMENSION(isize) :: mpi_unpack_int_array
-   comm_world_mpiisz = comm_world
-   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPIISZ),mpibuffers(ibuf)%pack_pos, &
-        mpi_unpack_int_array, int(isize,MPIISZ),mpi_integer,comm_world_mpiisz,ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
+                 mpibuffers(ibuf)%pack_pos, &
+        mpi_unpack_int_array, int(isize,MPI_INTEGER_KIND),mpi_integer,comm_world_mpiisz,ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_unpack_int_array: ', message(1:length)
@@ -474,9 +522,11 @@ contains
    implicit none
    integer(ISZ)::ibuf
    REAL(8) :: mpi_unpack_real_scalar
-   comm_world_mpiisz = comm_world
-   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPIISZ),mpibuffers(ibuf)%pack_pos, &
-        mpi_unpack_real_scalar, int(1,MPIISZ),mpi_double_precision,comm_world_mpiisz,ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
+                 mpibuffers(ibuf)%pack_pos, &
+        mpi_unpack_real_scalar, int(1,MPI_INTEGER_KIND),mpi_double_precision,comm_world_mpiisz,ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_unpack_real_scalar: ', message(1:length)
@@ -489,15 +539,17 @@ contains
    integer(ISZ)::ibuf
    INTEGER(ISZ), INTENT(IN) :: isize
    REAL(8), DIMENSION(isize) :: mpi_unpack_real_array
-   comm_world_mpiisz = comm_world
-   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPIISZ),mpibuffers(ibuf)%pack_pos, &
-        mpi_unpack_real_array, int(isize,MPIISZ), mpi_double_precision,comm_world_mpiisz,ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
+                 mpibuffers(ibuf)%pack_pos, &
+        mpi_unpack_real_array, int(isize,MPI_INTEGER_KIND), mpi_double_precision,comm_world_mpiisz,ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_pack_real_array: ', message(1:length)
    endif
    if (l_mpiverbose) &
-        write(STDOUT,*) 'unpack_real', mpibuffers(ibuf)%pack_pos, int(size(mpibuffers(ibuf)%buffer),MPIISZ)
+        write(STDOUT,*) 'unpack_real', mpibuffers(ibuf)%pack_pos, int(size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND)
    return
  end function mpi_unpack_real_array
  
@@ -506,15 +558,17 @@ contains
    integer(ISZ)::ibuf
    INTEGER(ISZ), INTENT(IN) :: isize
    COMPLEX(8), DIMENSION(isize) :: mpi_unpack_complex_array
-   comm_world_mpiisz = comm_world
-   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPIISZ),mpibuffers(ibuf)%pack_pos, &
-        mpi_unpack_complex_array, int(isize,MPIISZ), mpi_double_complex,comm_world_mpiisz,ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
+                 mpibuffers(ibuf)%pack_pos, &
+        mpi_unpack_complex_array, int(isize,MPI_INTEGER_KIND), mpi_double_complex,comm_world_mpiisz,ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in mpi_unpack_complex_array: ', message(1:length)
    endif
    if (l_mpiverbose) &
-        write(STDOUT,*) 'unpack_cmpx', mpibuffers(ibuf)%pack_pos, int(size(mpibuffers(ibuf)%buffer),MPIISZ)
+        write(STDOUT,*) 'unpack_cmpx', mpibuffers(ibuf)%pack_pos, int(size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND)
    return
  end function mpi_unpack_complex_array
 
@@ -523,9 +577,11 @@ contains
    integer(ISZ)::ibuf
    INTEGER(ISZ), INTENT(IN) :: isize
    logical(ISZ), DIMENSION(isize) :: mpi_unpack_logical_array
-   comm_world_mpiisz = comm_world
-     call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPIISZ),mpibuffers(ibuf)%pack_pos, &
-          mpi_unpack_logical_array, int(isize,MPIISZ), mpi_double_precision,comm_world_mpiisz,ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+     call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
+                   mpibuffers(ibuf)%pack_pos, &
+          mpi_unpack_logical_array, int(isize,MPI_INTEGER_KIND), mpi_double_precision,comm_world_mpiisz,ierr)
    return
  end function mpi_unpack_logical_array
 
@@ -547,9 +603,11 @@ end module mpirz
    integer(ISZ)::ibuf
    INTEGER(ISZ), INTENT(IN) :: isize
    REAL(8), DIMENSION(isize) :: a
-   comm_world_mpiisz = comm_world
-   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPIISZ),mpibuffers(ibuf)%pack_pos, &
-        a, int(isize,MPIISZ), mpi_double_precision,comm_world_mpiisz,ierr)
+   !comm_world_mpiisz = comm_world
+   comm_world_mpiisz = MPI_COMM_WORLD
+   call mpi_unpack(mpibuffers(ibuf)%buffer,int(8*size(mpibuffers(ibuf)%buffer),MPI_INTEGER_KIND), &
+                 mpibuffers(ibuf)%pack_pos, &
+        a, int(isize,MPI_INTEGER_KIND), mpi_double_precision,comm_world_mpiisz,ierr)
    if (ierr /= MPI_SUCCESS) then
       call MPI_Error_string( ierr, message, length, temp )
       write(STDOUT,*) '***** Error in submpi_unpack_real_array: ', message(1:length)

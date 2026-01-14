@@ -1386,7 +1386,7 @@ c===========================================================================
      &                        mglevel)
       use Subtimersf3d
       use Parallel,Only: comm_world
-      use mpi
+      use mpi_f08
       integer(ISZ):: nx,ny,nz,iz0,nz0,izs,my_index,nzprocs,mglevel
       real(kind=8):: a(-1:nx+1,-1:ny+1,iz0:nz)
       character(*):: text
@@ -1396,13 +1396,16 @@ c ordering as would be in serial. Primarily used for debugging purposes.
 c It is maintained in case it is needed for future use since there is some subtlty
 c to getting it correct.
 
-      integer(MPIISZ):: ix,iy,iz,lastz,firstz
-      integer(MPIISZ):: mpierror,mpistatus(MPI_STATUS_SIZE),comm_world_mpiisz
-      integer(MPIISZ):: nn
-      integer(MPIISZ):: messid = 999
+      integer(MPI_INTEGER_KIND):: ix,iy,iz,lastz,firstz
+      integer(MPI_INTEGER_KIND):: mpierror
+      integer(MPI_INTEGER_KIND):: nn
+      integer(MPI_INTEGER_KIND):: messid = 999
+      type(MPI_Comm):: comm_world_mpiisz
+      type(MPI_Status):: mpistatus
       real(kind=8):: substarttime,wtime
       if (lf3dtimesubs) substarttime = wtime()
-      comm_world_mpiisz = comm_world
+c     comm_world_mpiisz = comm_world
+      comm_world_mpiisz = MPI_COMM_WORLD
 
       call MPI_BARRIER(comm_world_mpiisz,mpierror)
 
@@ -1418,7 +1421,7 @@ c     lastz = nz - 2
 c Each processor prints out its data and then sends a message to the next so it
 c can print its data.
       if (my_index > 0) then
-        call MPI_RECV(firstz,int(1,MPIISZ),MPI_INTEGER,int(my_index-1,MPIISZ),messid,
+        call MPI_RECV(firstz,int(1,MPI_INTEGER_KIND),MPI_INTEGER,int(my_index-1,MPI_INTEGER_KIND),messid,
      &                comm_world_mpiisz,mpistatus,mpierror)
         firstz = firstz - izs
       else
@@ -1443,7 +1446,7 @@ c the processors deal with files.
 
       if (my_index < nzprocs - 1) then
         nn = izs+lastz+1
-        call MPI_SEND(nn,int(1,MPIISZ),MPI_INTEGER,int(my_index+1,MPIISZ),messid,
+        call MPI_SEND(nn,int(1,MPI_INTEGER_KIND),MPI_INTEGER,int(my_index+1,MPI_INTEGER_KIND),messid,
      &                comm_world_mpiisz,mpierror)
       endif
 
@@ -4483,16 +4486,18 @@ c     enddo
 c=============================================================================
       subroutine startwaitinginline()
       use Parallel
-      use mpi
-      integer(MPIISZ):: mpierror,comm_world_mpiisz
-      integer(MPIISZ):: mpistatus(MPI_STATUS_SIZE)
-      integer(MPIISZ):: messid = 23298
-      integer(MPIISZ):: ip,x
-      comm_world_mpiisz = comm_world
+      use mpi_f08
+      integer(MPI_INTEGER_KIND):: mpierror
+      integer(MPI_INTEGER_KIND):: messid = 23298
+      integer(MPI_INTEGER_KIND):: ip,x
+      type(MPI_Comm):: comm_world_mpiisz
+      type(MPI_Status):: mpistatus
+c     comm_world_mpiisz = comm_world
+      comm_world_mpiisz = MPI_COMM_WORLD
 
       if (my_index > 0) then
         ip = my_index - 1
-        call MPI_RECV(x,int(1,MPIISZ),MPI_INTEGER,ip,messid,
+        call MPI_RECV(x,int(1,MPI_INTEGER_KIND),MPI_INTEGER,ip,messid,
      &                comm_world_mpiisz,mpistatus,mpierror)
       endif
 
@@ -4501,17 +4506,19 @@ c=============================================================================
 c=============================================================================
       subroutine endwaitinginline()
       use Parallel
-      use mpi
-      integer(MPIISZ):: mpierror,comm_world_mpiisz
+      use mpi_f08
+      integer(MPI_INTEGER_KIND):: mpierror
+      type(MPI_Comm):: comm_world_mpiisz
 
-      integer(MPIISZ):: messid = 23298
-      integer(MPIISZ):: ip,x
-      comm_world_mpiisz = comm_world
+      integer(MPI_INTEGER_KIND):: messid = 23298
+      integer(MPI_INTEGER_KIND):: ip,x
+c     comm_world_mpiisz = comm_world
+      comm_world_mpiisz = MPI_COMM_WORLD
 
       if (my_index < nprocs-1) then
         x = 1
         ip = my_index + 1
-        call MPI_SEND(x,int(1,MPIISZ),MPI_INTEGER,ip,messid,
+        call MPI_SEND(x,int(1,MPI_INTEGER_KIND),MPI_INTEGER,ip,messid,
      &                comm_world_mpiisz,mpierror)
       endif
 
