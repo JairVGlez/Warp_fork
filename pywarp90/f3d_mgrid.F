@@ -6768,7 +6768,7 @@ c       rhocoarse = 0.
 c       --- Restriction - note that no scaling factor is needed
         call restrict2d(nx,nz,nxlocal,nzlocal,nxguardres,nzguardres,res,
      &                  nxcoarse,nzcoarse,nxlocalcoarse,nzlocalcoarse,
-     &                  nxguardrho,nzguardrho,rhocoarse,
+     &                  0,0,rhocoarse,
      &                  localbounds,localboundsc,lxoffset,lzoffset,.true.)
 
         if (lprintmgarraysumdiagnostic) then
@@ -8519,7 +8519,7 @@ c        epsiloncoarse = eps0
 c       --- Restriction - note that no scaling factor is needed
         call restrict2d(nx,nz,nxlocal,nzlocal,nxguardres,nzguardres,res,
      &                  nxcoarse,nzcoarse,nxlocalcoarse,nzlocalcoarse,
-     &                  nxguardrho,nzguardrho,rhocoarse,
+     &                  0,0,rhocoarse,
      &                  localbounds,localboundsc,
      &                  lxoffset,lzoffset,.true.)
 
