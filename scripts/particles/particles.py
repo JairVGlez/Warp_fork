@@ -241,7 +241,7 @@ _selectparticles_kwdefaults = {"js":0, "jslist":None, "win":None,
                                "ix":None, "wx":1., "iy":None, "wy":1., "iz":None, "wz":1.,
                                "xl":None, "xu":None, "yl":None, "yu":None, "zl":None, "zu":None,
                                "zc":None, "xc":None, "yc":None,
-                               "ssn":None, "ssnid":None, "ii":None,
+                               "ssn":None, "ssnid":None, "istep":None, "nrandom":None, "ii":None,
                                "lost":false, "suffix":'', "object":top, "pgroup":None,
                                "w3dobject":None,
                                'checkargs':0, 'allowbadargs':0}
@@ -281,6 +281,8 @@ def selectparticles(iw=0, kwdict={}, **kw):
                 Raises and error if ssn's are not saved - top.ssnpid must be setup
                 or the ssnid must be specified.
     - ssnid=top.ssnpid: ID to use when selecting particles with a specified ssn.
+    - istep=1: Returns only every istep'th particle
+    - nrandom=None: If specified, this number of particle will be selected randomly
     - ii=None: Particle index list
                If supplied, use it for the list of particles instead
                of choosing particles from the given species.
@@ -335,6 +337,8 @@ def selectparticles(iw=0, kwdict={}, **kw):
     yc = kwvalues['yc']
     ssn = kwvalues['ssn']
     ssnid = kwvalues['ssnid']
+    istep = kwvalues['istep']
+    nrandom = kwvalues['nrandom']
     ii = kwvalues['ii']
     lost = kwvalues['lost']
     suffix = kwvalues['suffix']
@@ -540,7 +544,7 @@ def selectparticles(iw=0, kwdict={}, **kw):
             # --- If all particles are being selected, then a slice object is returned
             # --- so that a reference to the particle array is returned, avoiding
             # --- memory copying.
-            ii = slice(i1, i2)
+            ii = slice(i1, i2, istep)
     else:
         zbeam = getattrwithsuffix(object, 'zbeam', suffix)
         zwindows = getattrwithsuffix(object, 'zwindows', suffix)
@@ -553,6 +557,19 @@ def selectparticles(iw=0, kwdict={}, **kw):
         z, ii = _setindices(z, ii, i1, i2)
         zslice = z
         ii = ii[logical_and(less(win[0], zslice), less(zslice, win[1]))]
+
+    if istep is not None and not isinstance(ii, slice):
+        ii = ii[::istep]
+
+    if nrandom is not None:
+        # --- This chooses a random sampling of the particles. It will be
+        # --- different each time.
+        if ii is None:
+            ii = arange(i1, i2)
+        elif isinstance(ii, slice):
+            ii = arange(ii.start, ii.stop, ii.step)
+
+        ii = populationsample(ii, nrandom)
 
     return ii
 
