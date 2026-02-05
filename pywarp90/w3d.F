@@ -5225,7 +5225,7 @@ c       --- special loop symmetry is used
             knext = nint((zp(ip+1) - zgrid - zmmin)*dzi)
           endif
 
-          wx = (xp(ip) - xmmin)*dxi - i
+          wx = (abs(xp(ip)) - xmmin)*dxi - i
           wz = (zp(ip) - zgrid - zmmin)*dzi - k
 
           u0 = 0.5*(0.5 - wx)**2
@@ -5767,7 +5767,7 @@ c       --- special loop symmetry is used
             knext = nint((zp(ip+1) - zgrid - zmmin)*dzi)
           endif
 
-          wx = (xp(ip) - xmmin)*dxi - i
+          wx = (abs(xp(ip)) - xmmin)*dxi - i
           wz = (zp(ip) - zgrid - zmmin)*dzi - k
 
           u10 = wx - 0.5
