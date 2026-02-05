@@ -178,7 +178,8 @@ class OpenPMDDiagnostic(object) :
                 except OSError :
                     pass
 
-    def setup_openpmd_file( self, f, iteration, time, dt ) :
+    @staticmethod
+    def setup_openpmd_file( f: h5py.File, iteration: int, time: float, dt: float ):
         """
         Sets the attributes of the hdf5 file, that comply with OpenPMD
 
@@ -215,7 +216,8 @@ class OpenPMDDiagnostic(object) :
         bp.attrs["dt"] = dt
         bp.attrs["timeUnitSI"] = 1.
 
-    def setup_openpmd_record( self, dset, quantity ) :
+    @staticmethod
+    def setup_openpmd_record( dset: h5py.Dataset | h5py.Group, quantity: str ):
         """
         Sets the attributes of a record, that comply with OpenPMD
 
@@ -224,18 +226,19 @@ class OpenPMDDiagnostic(object) :
         dset : an h5py.Dataset or h5py.Group object
 
         quantity : string
-           The name of the record considered
+           The name of the physical quantity of the record considered
         """
         dset.attrs["unitDimension"] = unit_dimension_dict[quantity]
         # timeOffset is set to zero (approximation)
         dset.attrs["timeOffset"] = 0.
 
-    def setup_openpmd_component( self, dset ) :
+    @staticmethod
+    def setup_openpmd_component( dset: h5py.Dataset ):
         """
         Sets the attributes of a component, that comply with OpenPMD
 
         Parameter
         ---------
-        dset : an h5py.Dataset or h5py.Group object
+        dset : an h5py.Dataset object
         """
         dset.attrs["unitSI"] = 1.
