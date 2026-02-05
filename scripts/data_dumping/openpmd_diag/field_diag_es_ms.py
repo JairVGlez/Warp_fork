@@ -2,6 +2,7 @@
 # Edits based on code contributed from Christopher Hall and Nathan Cook of RadiaSoft LLC
 import os
 import datetime
+from typing import Literal
 from dateutil.tz import tzlocal
 import h5py as h5
 import numpy as np
@@ -126,15 +127,22 @@ class StaticDiagnostic(object):
         return True
 
     def writeDataset(self, data, prefix, attrs={}):
+        record_type: Literal['scalar', 'vector', 'unknown'] = 'unknown'
         quantity = str(prefix).strip('/').split('/')[-1]
 
-        if len(data.shape) == len(self.dims) or (self.geometry == 'cartesian2D' and len(data.shape) == len(self.dims) - 1):  # Scalar data on the mesh
+        if quantity in ['phi', 'rho']:
+            record_type = 'scalar'
+        elif quantity in ['E', 'B', 'vector_potential', 'A', 'J', 'position', 'momentum']:
+            record_type = 'vector'
+        else:
+            print(f"StaticDiagnostic.writeDataset: could not determine record type of quantity = {quantity}")
+
+        if record_type == 'scalar':  # Scalar data on the mesh
             self.file[prefix] = data
             field = self.file[prefix]
             field.attrs['position'] = [0.0]*len(self.axisLabels)  # Report scalar as on the mesh elements
             field.attrs['unitSI'] = 1.0
-        elif len(data.shape) == len(self.dims) + 1 or (self.geometry == 'cartesian2D' and len(data.shape) == len(self.dims)):  # Vector data on the mesh
-
+        elif record_type == 'vector':  # Vector data on the mesh
             if self.geometry == 'thetaMode':
                 data = data.swapaxes(1, 2)  # For thetaMode, components stored in order of m,r,z
             for i, v in enumerate(data):
@@ -298,6 +306,12 @@ class MagnetostaticFieldDiagnostic(StaticDiagnostic):
 
         self.gatherfields()
         self.gathervectorpotential()
+
+        if self.solver.__class__.__name__ == 'MultiGrid2D':
+            # Kludge to make 2D magnetostatic solver compatible with thetaMode
+            # output (which is currently the only relevant option)
+            self.bfield = self.bfield[:, :, np.newaxis, :]
+            self.a = self.a[:, :, np.newaxis, :]
         if self.rank == 0:
             self.writeDataset(self.bfield, prefix='%s%sB' % (self.basePath, self.meshPath))
             self.writeDataset(self.a, prefix='%s%svector_potential' % (self.basePath, self.meshPath))
