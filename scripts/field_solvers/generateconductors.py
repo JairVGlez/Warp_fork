@@ -1888,6 +1888,7 @@ class GridIntercepts(object):
                 self.intercepts.ycondids = condid
                 self.intercepts.zcondids = condid
 
+    @staticmethod
     def handleneumannboundaries(dels):
         # --- This should be the same as what is in Delta.normalize
         def _fixneumannzeros(i0, i1, fuzz):
@@ -1939,6 +1940,7 @@ class GridIntercepts(object):
             ccc = np.where((-1+fuzz<dels[i,:])&(dels[i,:]<0.), -2., dels[i,:])
             dels[i,:] = np.where(delsmin==0., ccc, dels[i,:])
 
+    @staticmethod
     def installlist(interceptslist,installrz,solvergeom,conductors,gridrz,neumann):
 
         # --- For each intercept, generate the conductor data in a separate
@@ -2045,10 +2047,6 @@ class GridIntercepts(object):
                     warp.frz.install_conductors_rz(conductors,warp.frz.basegrid)
                 else:
                     warp.frz.install_conductors_rz(conductors,gridrz)
-
-    # --- Set so installlist can be called directly from GridIntercepts
-    installlist = staticmethod(installlist)
-    handleneumannboundaries = staticmethod(handleneumannboundaries)
 
     def px(self,ii,xmin=None,xmax=None):
         if xmin is None:
