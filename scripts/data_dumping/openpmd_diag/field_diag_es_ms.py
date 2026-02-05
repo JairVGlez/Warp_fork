@@ -62,6 +62,14 @@ class StaticDiagnostic(object):
             self.gridSpacing = [self.solver.dx, self.solver.dz]
             self.gridGlobalOffset = [self.solver.xmmin, self.solver.zmmin]
             self.mesh = [self.solver.xmesh, self.solver.zmesh]
+        elif self.solver.solvergeom == self.w3d.XYgeom:
+            self.geometry = 'cartesianXY'
+            self.dims = ['x', 'y', 'z']
+            self.axisLabels = ['x', 'y']
+            self.gridsize = [self.solver.nx + 1, self.solver.ny + 1]
+            self.gridSpacing = [self.solver.dx, self.solver.dy]
+            self.gridGlobalOffset = [self.solver.xmmin, self.solver.ymmin]
+            self.mesh = [self.solver.xmesh, self.solver.ymesh]
         elif self.solver.solvergeom == self.w3d.RZgeom:
             self.geometry = 'thetaMode'
             self.geometryParameters = 'm=0'
@@ -143,6 +151,8 @@ class StaticDiagnostic(object):
             self.gridGlobalOffset = [self.solver.xmmin, self.solver.ymmin, self.solver.zmmin+self.top.zgrid]
         elif self.solver.solvergeom == self.w3d.XZgeom:
             self.gridGlobalOffset = [self.solver.xmmin, self.solver.zmmin+self.top.zgrid]
+        elif self.solver.solvergeom == self.w3d.XYgeom:
+            self.gridGlobalOffset = [self.solver.xmmin, self.solver.ymmin]
         elif self.solver.solvergeom == self.w3d.RZgeom:
             self.gridGlobalOffset = [self.solver.xmmin, self.solver.zmmin+self.top.zgrid]
         else:
