@@ -5,6 +5,7 @@ This class is a common class from which both ParticleDiagnostic
 and FieldDiagnostic inherit
 """
 import os
+from abc import ABC, abstractmethod
 import h5py
 import datetime
 import shutil
@@ -17,7 +18,7 @@ from .data_dict import unit_dimension_dict
 # Utility methods for openPMD
 from .openpmd_utils import openpmd_encode
 
-class OpenPMDDiagnostic(object) :
+class OpenPMDDiagnostic(ABC) :
     """
     Generic class that contains methods which are common
     to both FieldDiagnostic and ParticleDiagnostic
@@ -152,6 +153,14 @@ class OpenPMDDiagnostic(object) :
         (self.top.it<=self.iteration_max)):
             # Write the hdf5 file if needed
             self.write_hdf5( self.top.it )
+
+    @abstractmethod
+    def write_hdf5( self, iteration: int ):
+        """
+        Write the hdf5 file at this iteration. Inheriting from
+        OpenPMDDiagnostic requires specifying this method.
+        """
+        pass
 
     def create_dir( self, dir_path, remove_existing=False ) :
         """
