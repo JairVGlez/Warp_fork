@@ -1714,8 +1714,8 @@ yprms(0:nzwind,0:nswind)   _real [1]     # RMS Y' in window
 epsx(0:nzwind,0:nswind)    _real [m-rad] # X-X' emittance
 epsy(0:nzwind,0:nswind)    _real [m-rad] # Y-Y' emittance
 epsz(0:nzwind,0:nswind)    _real [m-rad] # Z-Z' emittance
-epsnx(0:nzwind,0:nswind)   _real [mm-mrad] # X-X' normalized emittance
-epsny(0:nzwind,0:nswind)   _real [mm-mrad] # Y-Y' normalized emittance
+epsnx(0:nzwind,0:nswind)   _real [mm-mrad] # X-Vx normalized emittance
+epsny(0:nzwind,0:nswind)   _real [mm-mrad] # Y-Vy normalized emittance
 epsnz(0:nzwind,0:nswind)   _real [mm-mrad] # Z-Vz normalized emittance
 epsr(0:nzwind,0:nswind)    _real [m-rad] # Generalized axisymmetric emittance
 epsg(0:nzwind,0:nswind)    _real [m-rad] # Generalized emittance
@@ -1803,8 +1803,8 @@ yprmsz(0:nzmmnt,0:nszmmnt)   _real [1]     # RMS Y' at grid point
 epsxz(0:nzmmnt,0:nszmmnt)    _real [m-rad] # X-X' emittance at grid point
 epsyz(0:nzmmnt,0:nszmmnt)    _real [m-rad] # Y-Y' emittance at grid point
 epszz(0:nzmmnt,0:nszmmnt)    _real [m-rad] # Z-Z' emittance at grid point
-epsnxz(0:nzmmnt,0:nszmmnt)   _real [mm-mrad] # X-X' normalized emittance at grid point
-epsnyz(0:nzmmnt,0:nszmmnt)   _real [mm-mrad] # Y-Y' normalized emittance at grid point
+epsnxz(0:nzmmnt,0:nszmmnt)   _real [mm-mrad] # X-Vx normalized emittance at grid point
+epsnyz(0:nzmmnt,0:nszmmnt)   _real [mm-mrad] # Y-Vy normalized emittance at grid point
 epsnzz(0:nzmmnt,0:nszmmnt)   _real [mm-mrad] # Z-Vz normalized emittance at grid point
 epsrz(0:nzmmnt,0:nszmmnt)    _real [m-rad]   # Generalized axisymmetric
                                              # emittance on grid
@@ -1987,10 +1987,10 @@ hepsz(0:nzwind,0:lenhist,0:nshist)     _real [m-r]
    # Z-Z' emittance by window as a function of time
 hepsnx(0:nzwind,0:lenhist,0:nshist)    _real [mm-mr]
    limited (0:nzwind,0:jhist,0:nshist) +winhist
-   # X-X' normalized emittance by window as a function of time
+   # X-Vx normalized emittance by window as a function of time
 hepsny(0:nzwind,0:lenhist,0:nshist)    _real [mm-mr]
    limited (0:nzwind,0:jhist,0:nshist) +winhist
-   # Y-Y' normalized emittance by window as a function of time
+   # Y-Vy normalized emittance by window as a function of time
 hepsnz(0:nzwind,0:lenhist,0:nshist)    _real [mm-mr]
    limited (0:nzwind,0:jhist,0:nshist) +winhist
    # Z-Vz normalized emittance by window as a function of time
