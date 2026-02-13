@@ -7936,15 +7936,6 @@ c  This seems to be the fastest version.
       dxi = 1./dx
       dyi = 1./dy
       dzi = 1./dz
-      if (l2symtry) then
-c       --- The particle weight is reduced by a factor of 2 except near the
-c       --- transverse boundaries.
-        g = g*0.5
-      elseif (l4symtry) then
-c       --- The particle weight is reduced by a factor of 4 except near the
-c       --- transverse boundaries.
-        g = g*0.25
-      endif
 
 ! np was made FIRSTPRIVATE to get around a bug when the expression
 ! np+1-ipmin was evaluating to 1-ipmin (as if np was zero).
@@ -7954,6 +7945,16 @@ c       --- transverse boundaries.
 !$OMP&FIRSTPRIVATE(np)
 
       if (ny > 0 .and. nz > 0) then
+
+        if (l2symtry) then
+c         --- The particle weight is reduced by a factor of 2 except near the
+c         --- transverse boundaries.
+          g = g*0.5
+        elseif (l4symtry) then
+c         --- The particle weight is reduced by a factor of 4 except near the
+c         --- transverse boundaries.
+          g = g*0.25
+        endif
 
 c       --- vectorized loop to compute indices, weights
         if (l2symtry) then
@@ -8068,6 +8069,12 @@ c         --- normal loop
         endif
 
       else if (ny == 0 .and. nz > 0) then
+
+        if (l4symtry) then
+c         --- The particle weight is reduced by a factor of 2 except near the
+c         --- transverse boundaries.
+          g = g*0.5
+        endif
 
 c       --- normal loop
         if (l4symtry) then
@@ -8925,15 +8932,6 @@ c  Uses a second order spline with direct deposition (no particle blocks)
       dxi = 1./dx
       dyi = 1./dy
       dzi = 1./dz
-      if (l2symtry) then
-c       --- The particle weight is reduced by a factor of 2 except near the
-c       --- transverse boundaries.
-        g = g*0.5
-      elseif (l4symtry) then
-c       --- The particle weight is reduced by a factor of 4 except near the
-c       --- transverse boundaries.
-        g = g*0.25
-      endif
 
 ! np was made FIRSTPRIVATE to get around a bug when the expression
 ! np+1-ipmin was evaluating to 1-ipmin (as if np was zero).
@@ -8946,6 +8944,16 @@ c       --- transverse boundaries.
         if (nxguardrho <= 0 .or. nyguardrho <= 0 .or. nzguardrho <= 0) then
           call kaboom("setrho3ddirectspline2: there must be at least one guard cell on all axes")
           return
+        endif
+
+        if (l2symtry) then
+c         --- The particle weight is reduced by a factor of 2 except near the
+c         --- transverse boundaries.
+          g = g*0.5
+        elseif (l4symtry) then
+c         --- The particle weight is reduced by a factor of 4 except near the
+c         --- transverse boundaries.
+          g = g*0.25
         endif
 
 c     --- vectorized loop to compute indices, weights
@@ -9155,6 +9163,12 @@ c       --- normal loop
         if (nxguardrho <= 0 .or. nzguardrho <= 0) then
           call kaboom("setrho3ddirectspline2: there must be at least one guard cell on all axes")
           return
+        endif
+
+        if (l4symtry) then
+c         --- The particle weight is reduced by a factor of 4 except near the
+c         --- transverse boundaries.
+          g = g*0.5
         endif
 
 c     --- NY = 0
@@ -9761,6 +9775,8 @@ c     --- These are needed when lcylindrical is true, in which case x=r, y=0.
       dyi = 1./dy
       dzi = 1./dz
 
+      g0 = wght*q/(dx*dy*dz)
+
       if (lcylindrical) then
         if (xmmin == 0.) then
 c         --- The factor 0.75 corrects for overdeposition due to linear
@@ -9776,16 +9792,6 @@ c         --- and Verboncoeur, J. of Comp. Phys.,
         enddo
         cdens = cdens*wght*q
       else
-        g0 = wght*q/(dx*dy*dz)
-        if (l2symtry) then
-c         --- The particle weight is reduced by a factor of 2 except near the
-c         --- transverse boundaries.
-          g0 = g0*0.5
-        elseif (l4symtry) then
-c         --- The particle weight is reduced by a factor of 4 except near the
-c         --- transverse boundaries.
-          g0 = g0*0.25
-        endif
         cdens = g0
       endif
 
@@ -9800,6 +9806,7 @@ c         --- transverse boundaries.
 
 c     --- vectorized loop to compute indices, weights
       if (l2symtry .and. .not. lcylindrical) then
+        g0 = g0*0.5
         iinext = int((xp(1) - xmmin)*dxi)
         jjnext = int((abs(yp(1)) - ymmin)*dyi)
         kknext = int((zp(1) - zgrid - zmmin)*dzi)
@@ -9837,6 +9844,7 @@ c     --- vectorized loop to compute indices, weights
         enddo
 !$OMP END DO
       elseif (l4symtry .and. .not. lcylindrical) then
+        g0 = g0*0.25
         iinext = int((abs(xp(1)) - xmmin)*dxi)
         jjnext = int((abs(yp(1)) - ymmin)*dyi)
         kknext = int((zp(1) - zgrid - zmmin)*dzi)
@@ -9933,6 +9941,7 @@ c       --- normal loop
 c NY == 0
 c     --- vectorized loop to compute indices, weights
       if (l2symtry .and. .not. lcylindrical) then
+        g0 = g0*0.5
         iinext = int((xp(1) - xmmin)*dxi)
         kknext = int((zp(1) - zgrid - zmmin)*dzi)
         u1next = (xp(1) - xmmin)*dxi - iinext
@@ -9959,6 +9968,7 @@ c     --- vectorized loop to compute indices, weights
         enddo
 !$OMP END DO
       elseif (l4symtry .and. .not. lcylindrical) then
+        g0 = g0*0.25
         iinext = int((abs(xp(1)) - xmmin)*dxi)
         kknext = int((zp(1) - zgrid - zmmin)*dzi)
         u1next = (abs(xp(1)) - xmmin)*dxi - iinext
@@ -10062,15 +10072,6 @@ c  Uses a third order spline with direct deposition (no particle blocks)
       dxi = 1./dx
       dyi = 1./dy
       dzi = 1./dz
-      if (l2symtry) then
-c       --- The particle weight is reduced by a factor of 2 except near the
-c       --- transverse boundaries.
-        g0 = g0*0.5
-      elseif (l4symtry) then
-c       --- The particle weight is reduced by a factor of 4 except near the
-c       --- transverse boundaries.
-        g0 = g0*0.25
-      endif
 
 ! np was made FIRSTPRIVATE to get around a bug when the expression
 ! np+1-ipmin was evaluating to 1-ipmin (as if np was zero).
@@ -10083,6 +10084,16 @@ c       --- transverse boundaries.
         if (nxguardrho <= 0 .or. nyguardrho <= 0 .or. nzguardrho <= 0) then
           call kaboom("setrho3ddirectspline3: there must be at least one guard cell on all axes")
           return
+        endif
+
+        if (l2symtry) then
+c         --- The particle weight is reduced by a factor of 2 except near the
+c         --- transverse boundaries.
+          g0 = g0*0.5
+        elseif (l4symtry) then
+c         --- The particle weight is reduced by a factor of 4 except near the
+c         --- transverse boundaries.
+          g0 = g0*0.25
         endif
 
 c     --- vectorized loop to compute indices, weights
@@ -10202,6 +10213,12 @@ c     --- add the charge for each cell
           return
         endif
 
+        if (l4symtry) then
+c         --- The particle weight is reduced by a factor of 2 except near the
+c         --- transverse boundaries.
+          g0 = g0*0.5
+        endif
+
 c     --- NY = 0
 c     --- vectorized loop to compute indices, weights
 !$OMP DO
@@ -10293,15 +10310,6 @@ c  Uses a second order spline with direct deposition (no particle blocks)
       dxi = 1./dx
       dyi = 1./dy
       dzi = 1./dz
-      if (l2symtry) then
-c       --- The particle weight is reduced by a factor of 2 except near the
-c       --- transverse boundaries.
-        g0 = g0*0.5
-      elseif (l4symtry) then
-c       --- The particle weight is reduced by a factor of 4 except near the
-c       --- transverse boundaries.
-        g0 = g0*0.25
-      endif
 
 ! np was made FIRSTPRIVATE to get around a bug when the expression
 ! np+1-ipmin was evaluating to 1-ipmin (as if np was zero).
@@ -10310,6 +10318,16 @@ c       --- transverse boundaries.
 !$OMP&FIRSTPRIVATE(np)
 
       if (ny > 0) then
+
+        if (l2symtry) then
+c         --- The particle weight is reduced by a factor of 2 except near the
+c         --- transverse boundaries.
+          g0 = g0*0.5
+        elseif (l4symtry) then
+c         --- The particle weight is reduced by a factor of 4 except near the
+c         --- transverse boundaries.
+          g0 = g0*0.25
+        endif
 
         if (nxguardrho <= 0 .or. nyguardrho <= 0 .or. nzguardrho <= 0) then
           call kaboom("setrho3ddirectspline2: there must be at least one guard cell on all axes")
@@ -10526,6 +10544,12 @@ c       --- normal loop
         if (nxguardrho <= 0 .or. nzguardrho <= 0) then
           call kaboom("setrho3ddirectspline2: there must be at least one guard cell on all axes")
           return
+        endif
+
+        if (l4symtry) then
+c         --- The particle weight is reduced by a factor of 2 except near the
+c         --- transverse boundaries.
+          g0 = g0*0.5
         endif
 
 c     --- NY = 0
