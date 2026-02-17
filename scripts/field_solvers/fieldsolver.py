@@ -65,8 +65,10 @@ def fieldsolve(iwhich=0,lbeforefs=false,lafterfs=false):
         top.fstime += endtime - starttime
     else:
         currpkg = package()[0]
-        if (currpkg == "wxy" and wxy.lvp3d is False): fieldsolxy(iwhich)
-        else:                  fieldsol3d(iwhich)
+        if (currpkg == "wxy" and not wxy.lvp3d):
+            fieldsolxy(iwhich)
+        else:
+            fieldsol3d(iwhich)
 
     if lafterfs: controllers.afterfs()
 
@@ -99,7 +101,7 @@ def fetche(pgroup=None,ipmin=None,ip=None,js=None):
     if ipmin is None: ipmin = pgroup.ins[js]
     if ip is None: ip = pgroup.nps[js]
     currpkg = package()[0]
-    if (currpkg == "wxy" and wxy.lvp3d is False):
+    if (currpkg == "wxy" and not wxy.lvp3d):
         fetchexy(pgroup,ipmin,ip,js+1,top.pgroup.ex,top.pgroup.ey,top.pgroup.ez)
     else:
         fetche3d(pgroup,ipmin,ip,js+1)
@@ -136,7 +138,7 @@ def loadj(pgroup=None,ins_i=-1,nps_i=-1,is_i=-1,lzero=true,lfinalize_rho=true):
     # --- Now call the appropriate compiled interface routine based on the
     # --- current package
     currpkg = package()[0]
-    if (currpkg == "wxy" and wxy.lvp3d is False):
+    if (currpkg == "wxy" and not wxy.lvp3d):
         #loadrhoxy(ins_i,nps_i,is_i,lzero,lfinalize_rho)
         print("loadj not support in wxy yet")
     else:
@@ -1923,7 +1925,7 @@ def getdecomposedarray(arr,ix=None,iy=None,iz=None,bcast=1,local=0,
     if (decomp.nxprocs <= 1 and decomp.nyprocs <=1 and decomp.nzprocs <= 1):
         local = 1
 
-    if (nz == 0 and decomp.nzprocs > 1 and wxy.lvp3d is False):
+    if (nz == 0 and decomp.nzprocs > 1 and not wxy.lvp3d):
         # --- This is the slice code.
         local = 1
 
