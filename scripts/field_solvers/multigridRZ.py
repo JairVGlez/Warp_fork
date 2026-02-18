@@ -819,6 +819,7 @@ class MultiGridImplicit2D(MultiGrid3D):
         return super(MultiGridImplicit2D,self).getselfep(*args,**kw)[:,:,0,:]
 
     # --- A special version is needed since only part if source is returned.
+    @staticmethod
     def _setuprhoproperty():
         doc = "Charge density array"
         def fget(self):
@@ -830,6 +831,7 @@ class MultiGridImplicit2D(MultiGrid3D):
     del _setuprhoproperty
 
     # --- A special version is needed since only part if sourcep is returned.
+    @staticmethod
     def _setuprhopproperty():
         doc = "Charge density array for particles"
         def fget(self):

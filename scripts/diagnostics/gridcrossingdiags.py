@@ -1607,6 +1607,7 @@ data and the z mesh on which the calculation was done.
     # --- Setup the properties so that the last set of data which is
     # --- still being accumulated is not returned, and so that the
     # --- data is converted to an array.
+    @staticmethod
     def _setupproperty(name,doc=None):
         def fget(self):
             if self.nhist is None: nhist = top.nhist
@@ -2659,6 +2660,7 @@ around the peak current."""
     # --- Setup the properties so that the last set of data which is
     # --- still being accumulated is not returned, and so that the
     # --- data is converted to an array.
+    @staticmethod
     def _setupproperty(name,doc=None):
         def fget(self):
             if self.nhist is None: nhist = top.nhist

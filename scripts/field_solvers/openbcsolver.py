@@ -177,6 +177,7 @@ class OpenBC3D(SubcycledPoissonSolver):
     def getez(self,recalculate=None,lzero=true):
         return self.getselfe(recalculate,lzero)[2,...]
 
+    @staticmethod
     def _setuprhoproperty():
         doc = "Charge density array"
         def fget(self):
@@ -187,6 +188,7 @@ class OpenBC3D(SubcycledPoissonSolver):
     rho = property(**_setuprhoproperty())
     del _setuprhoproperty
 
+    @staticmethod
     def _setupphiproperty():
         doc = "Electrostatic potential array, including guard cells"
         def fget(self):
@@ -197,6 +199,7 @@ class OpenBC3D(SubcycledPoissonSolver):
     phi = property(**_setupphiproperty())
     del _setupphiproperty
 
+    @staticmethod
     def _setupselfeproperty():
         doc = "Electric field array for particles"
         def fget(self):
@@ -208,6 +211,7 @@ class OpenBC3D(SubcycledPoissonSolver):
     selfe = property(**_setupselfeproperty())
     del _setupselfeproperty
 
+    @staticmethod
     def _setuprhopproperty():
         doc = "Charge density array for particles"
         def fget(self):
@@ -218,6 +222,7 @@ class OpenBC3D(SubcycledPoissonSolver):
     rhop = property(**_setuprhopproperty())
     del _setuprhopproperty
 
+    @staticmethod
     def _setupphipproperty():
         doc = "Electrostatic potential array for particles"
         def fget(self):
@@ -228,6 +233,7 @@ class OpenBC3D(SubcycledPoissonSolver):
     phip = property(**_setupphipproperty())
     del _setupphipproperty
 
+    @staticmethod
     def _setupselfepproperty():
         doc = "Electric field array for particles"
         def fget(self):

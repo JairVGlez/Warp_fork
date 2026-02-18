@@ -2643,6 +2643,7 @@ class Species(object):
         return self.jslist[0]
     js = property(getjs)
 
+    @staticmethod
     def _getpgroupattribute(name, doc=None):
         if doc is None:
             # --- Note that top is used here since self is not actually defined
@@ -2683,6 +2684,7 @@ class Species(object):
     # --- Note that this is only for the local domain, no parallel communication
     # --- is done. If particles are needed across parallel domains, use the
     # --- get methods.
+    @staticmethod
     def _getpgroupattribute(name, doc=None):
         def fget(self):
             if len(self.jslist) == 1:
@@ -2723,6 +2725,7 @@ class Species(object):
     bz = property(*_getpgroupattribute('bz', 'z B-field, in local domain'))
 
     # --- This handles the particles pid from the species.
+    @staticmethod
     def _getpgroupattribute(name, doc=None):
         def fget(self):
             if len(self.jslist) == 1:
@@ -2753,6 +2756,7 @@ class Species(object):
     _builtinpids = {}
 
     # --- This handles the components of the pid for the particles from the species.
+    @staticmethod
     def _getpgroupattribute(pkg, idname, doc=None, _builtinpids=_builtinpids):
         attrname = idname[:-3]  # strip off the pid suffix
         # --- Add attribute to dictionary, allowing it to be used as a keyword to addparticles
@@ -2787,6 +2791,7 @@ class Species(object):
                 raise NotImplementedError('The species attributes only works with one species')
         return fget, fset, None, doc
 
+    @staticmethod
     def _setupgetmethod(pkg, idname):
         def getpidname(self, **kw):
             id = getattr(pkg, idname) - 1
@@ -2880,6 +2885,7 @@ class Species(object):
     dt = property(*_getpgroupattribute(wxy, 'dtpid', 'particle time step size for slice code'))
     getdt = _setupgetmethod(wxy, 'dtpid')
 
+    @staticmethod
     def _gettopattribute(name, doc=None):
         if doc is None:
             doc = top.getvardoc(name)
@@ -2945,6 +2951,7 @@ class Species(object):
     # --- Note that this is on for the local domain, no parallel communication
     # --- is done. If lost particles are needed across parallel domains, use the
     # --- get methods.
+    @staticmethod
     def _getpgroupattribute(name, doc=None):
         def fget(self):
             if len(self.jslist) == 1:
@@ -2985,6 +2992,7 @@ class Species(object):
     bzlost = property(*_getpgroupattribute('bzlost', 'z B-field of lost particles, in local domain'))
     tplost = property(*_getpgroupattribute('tplost', 'time particles were lost, in local domain'))
 
+    @staticmethod
     def _getpgroupattribute(name, doc=None):
         def fget(self):
             if len(self.jslist) == 1:
@@ -3016,6 +3024,7 @@ class Species(object):
     del _getpgroupattribute
 
     # --- For variables that are 2, 3, or 4-D
+    @staticmethod
     def _gettopattribute(name, doc=None):
         if doc is None:
             doc = top.getvardoc(name)
@@ -3059,6 +3068,7 @@ class Species(object):
 
     del _gettopattribute
 
+    @staticmethod
     def _getw3dattribute(name, doc=None):
         if doc is None:
             doc = w3d.getvardoc(name)
@@ -3088,6 +3098,7 @@ class Species(object):
     # --- For variables that are 1-D, and use sid
     # --- Note that this won't handle multiple js values well. It assumes
     # --- that all of the jslist have the same jsid.
+    @staticmethod
     def _gettopjsid1dattribute(name, doc=None):
         if doc is None:
             doc = top.getvardoc(name)
@@ -3102,6 +3113,7 @@ class Species(object):
     # --- For variables that are 2, 3, or 4-D, and use sid
     # --- Note that this won't handle multiple js values well. It assumes
     # --- that all of the jslist have the same jsid.
+    @staticmethod
     def _gettopjsidattribute(name, doc=None):
         if doc is None:
             doc = top.getvardoc(name)
@@ -3232,6 +3244,7 @@ class Species(object):
     # --- For lab-window moments.
     # --- Note that this won't handle multiple js values well. It assumes
     # --- that all of the jslist have the same jsid.
+    @staticmethod
     def _gettoplabmomattribute(name, doc=None):
         if doc is None:
             doc = top.getvardoc(name)
@@ -3291,6 +3304,7 @@ class Species(object):
     # --- For variables that are 2, 3, or 4-D, and use sid
     # --- Note that this won't handle multiple js values well. It assumes
     # --- that all of the jslist have the same jsid.
+    @staticmethod
     def _gettopjsidhistattribute(name, doc=None):
         if doc is None:
             doc = top.getvardoc(name)
