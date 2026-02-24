@@ -149,14 +149,10 @@ c     endif
 c     call ssidi(cmatxy,ncxy,ncxy,kpvtxy,tt1,tt2,xywork,001)
 
 c     --- These routines are from LAPACK.
-#if WORDSIZE == 64
-      call ssytrf("U",ncxy,cmatxy,ncxy,kpvtxy,xywork,(1+nx)*(1+ny),info)
-#else
 #ifdef CYGWIN
       call dsytrf_("U",ncxy,cmatxy,ncxy,kpvtxy,xywork,(1+nx)*(1+ny),info)
 #else
       call dsytrf("U",ncxy,cmatxy,ncxy,kpvtxy,xywork,(1+nx)*(1+ny),info)
-#endif
 #endif
       if (info .ne. 0) then
         print*,info
@@ -164,14 +160,10 @@ c     --- These routines are from LAPACK.
      &" two or more conductor points are within the same grid cell.")
       endif
 c     --- pcond is passed as workspace.
-#if WORDSIZE == 64
-      call ssytri("U",ncxy,cmatxy,ncxy,kpvtxy,pcond,info)
-#else
 #ifdef CYGWIN
       call dsytri_("U",ncxy,cmatxy,ncxy,kpvtxy,pcond,info)
 #else
       call dsytri("U",ncxy,cmatxy,ncxy,kpvtxy,pcond,info)
-#endif
 #endif
 
 c     --- Fill in lower half (which is the same as the upper half)

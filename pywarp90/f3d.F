@@ -3173,14 +3173,10 @@ c     endif
 c     call dsidi(cmat3d,nc3d,nc3d,kpvt3d,tt1,tt2,scrtch,001)
 
 c     --- These routines are from LAPACK.
-#if WORDSIZE == 64
-      call ssytrf("U",nc3d,cmat3d(:,:,0),nc3d,kpvt3d,scrtch,(1+nx)*(1+ny),info)
-#else
 #ifdef CYGWIN
       call dsytrf_("U",nc3d,cmat3d(:,:,0),nc3d,kpvt3d,scrtch,(1+nx)*(1+ny),info)
 #else
       call dsytrf("U",nc3d,cmat3d(:,:,0),nc3d,kpvt3d,scrtch,(1+nx)*(1+ny),info)
-#endif
 #endif
       if (info .ne. 0) then
 c       print*,info
@@ -3188,14 +3184,10 @@ c       print*,info
      & two or more conductor points are within the same grid cell.")
       endif
 c     --- pcond3d is passed as workspace.
-#if WORDSIZE == 64
-      call ssytri("U",nc3d,cmat3d(:,:,0),nc3d,kpvt3d,pcond3d,info)
-#else
 #ifdef CYGWIN
       call dsytri_("U",nc3d,cmat3d(:,:,0),nc3d,kpvt3d,pcond3d,info)
 #else
       call dsytri("U",nc3d,cmat3d(:,:,0),nc3d,kpvt3d,pcond3d,info)
-#endif
 #endif
 
 c     --- Fill in lower half (which is the same as the upper half)
@@ -3473,10 +3465,6 @@ c       endif
 c       call dsidi(cmat3d(1,1,iz),nc3d,nc3d,kpvt3d,tt1,tt2,scrtch,001)
 
 c       --- These routines are from LAPACK.
-#if WORDSIZE == 64
-        call ssytrf("U",nc3d,cmat3d(:,:,iz),nc3d,kpvt3d,scrtch,(1+nx)*(1+ny),
-     &              info)
-#else
 #ifdef CYGWIN
         call dsytrf_("U",nc3d,cmat3d(:,:,iz),nc3d,kpvt3d,scrtch,(1+nx)*(1+ny),
      &              info)
@@ -3484,21 +3472,16 @@ c       --- These routines are from LAPACK.
         call dsytrf("U",nc3d,cmat3d(:,:,iz),nc3d,kpvt3d,scrtch,(1+nx)*(1+ny),
      &              info)
 #endif
-#endif
         if (info .ne. 0) then
 c         print*,info
           call kaboom("cmkzset3d: ERROR: Capacity matrix is singular - it is likely that"//
      &" two or more conductor points are within the same grid cell.")
         endif
 c       --- pcond3d is passed as workspace.
-#if WORDSIZE == 64
-        call ssytri("U",nc3d,cmat3d(:,:,iz),nc3d,kpvt3d,pcond3d,info)
-#else
 #ifdef CYGWIN
         call dsytri_("U",nc3d,cmat3d(:,:,iz),nc3d,kpvt3d,pcond3d,info)
 #else
         call dsytri("U",nc3d,cmat3d(:,:,iz),nc3d,kpvt3d,pcond3d,info)
-#endif
 #endif
 
 c     --- Fill in lower half (which is the same as the upper half)
