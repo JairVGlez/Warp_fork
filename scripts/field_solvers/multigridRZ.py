@@ -171,7 +171,7 @@ class MultiGrid2D(MultiGrid3D):
                                self.mgmaxlevels,self.mgerror,self.mgtol,self.mgverbose,
                                self.downpasses,self.uppasses,
                                self.solvergeom==w3d.RZgeom,self.lcndbndy,self.laddconductor,self.icndbndy,
-                               self.gridmode,conductorobject,self.lapplyphiclamp,self.fsdecomp)
+                               f3d.gridmode,conductorobject,self.lapplyphiclamp,self.fsdecomp)
 
         #t1 = wtime()
         #print "Multigrid time = ",t1-t0
