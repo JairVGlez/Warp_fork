@@ -5,6 +5,8 @@ types that are passed into Species. These include all of the atomic elements
 (Hydrogen, etc.) and the following, Electron, Positron, Proton, Neutron,
 Dihydrogen, Dinitrogen, Dioxygen, Carbon_Monoxide, Carbon_Dioxide, and Water
 """
+from __future__ import annotations
+from typing import Any
 import builtins
 from ..warp import *
 
@@ -35,7 +37,11 @@ class Atom(Particle):
         self.Z = Z
         self.Group = Group
         self.Period = Period
+        if name is not None:
+            elements.append(self)
+            periodic_table[name] = {'A': A, 'Symbol': Symbol, 'Z': Z, 'Group': Group, 'Period': Period}
 
+elements: list[Atom] = []
 
 class Molecule(Particle):
     def __init__(self, Symbol, composition, name=None):
@@ -50,129 +56,117 @@ class Molecule(Particle):
         Particle.__init__(self, mass=mass, Symbol=Symbol, name=name)
 
 
-periodic_table = {}
-periodic_table['Hydrogen'] = {'A': 1.00794, 'Symbol': 'H', 'Z': 1, 'Group': 1, 'Period': 1}
-periodic_table['Deuterium'] = {'A': 2.01410178, 'Symbol': 'D', 'Z': 1, 'Group': 1, 'Period': 1}
-periodic_table['Tritium'] = {'A': 3.0160492, 'Symbol': 'T', 'Z': 1, 'Group': 1, 'Period': 1}
-periodic_table['Helium'] = {'A': 4.002602, 'Symbol': 'He', 'Z': 2, 'Group': 18, 'Period': 1}
-periodic_table['Lithium'] = {'A': 6.941, 'Symbol': 'Li', 'Z': 3, 'Group': 1, 'Period': 2}
-periodic_table['Lithium6'] = {'A': 6.01512279516, 'Symbol': 'Li6', 'Z': 3, 'Group': 1, 'Period': 2}
-periodic_table['Lithium7'] = {'A': 7.016004558, 'Symbol': 'Li7', 'Z': 3, 'Group': 1, 'Period': 2}
-periodic_table['Beryllium'] = {'A': 9.012182, 'Symbol': 'Be', 'Z': 4, 'Group': 2, 'Period': 2}
-periodic_table['Boron'] = {'A': 10.811, 'Symbol': 'B', 'Z': 5, 'Group': 13, 'Period': 2}
-periodic_table['Carbon'] = {'A': 12.0107, 'Symbol': 'C', 'Z': 6, 'Group': 14, 'Period': 2}
-periodic_table['Nitrogen'] = {'A': 14.0067, 'Symbol': 'N', 'Z': 7, 'Group': 15, 'Period': 2}
-periodic_table['Oxygen'] = {'A': 15.9994, 'Symbol': 'O', 'Z': 8, 'Group': 16, 'Period': 2}
-periodic_table['Fluorine'] = {'A': 18.9984032, 'Symbol': 'F', 'Z': 9, 'Group': 17, 'Period': 2}
-periodic_table['Neon'] = {'A': 20.1797, 'Symbol': 'Ne', 'Z': 10, 'Group': 18, 'Period': 2}
-periodic_table['Sodium'] = {'A': 22.98977, 'Symbol': 'Na', 'Z': 11, 'Group': 1, 'Period': 3}
-periodic_table['Magnesium'] = {'A': 24.305, 'Symbol': 'Mg', 'Z': 12, 'Group': 2, 'Period': 3}
-periodic_table['Aluminium'] = {'A': 26.981538, 'Symbol': 'Al', 'Z': 13, 'Group': 13, 'Period': 3}
-periodic_table['Silicon'] = {'A': 28.0855, 'Symbol': 'Si', 'Z': 14, 'Group': 14, 'Period': 3}
-periodic_table['Phosphorus'] = {'A': 30.973761, 'Symbol': 'P', 'Z': 15, 'Group': 15, 'Period': 3}
-periodic_table['Sulfur'] = {'A': 32.065, 'Symbol': 'S', 'Z': 16, 'Group': 16, 'Period': 3}
-periodic_table['Chlorine'] = {'A': 35.453, 'Symbol': 'Cl', 'Z': 17, 'Group': 17, 'Period': 3}
-periodic_table['Argon'] = {'A': 39.948, 'Symbol': 'Ar', 'Z': 18, 'Group': 18, 'Period': 3}
-periodic_table['Potassium'] = {'A': 39.0983, 'Symbol': 'K', 'Z': 19, 'Group': 1, 'Period': 4}
-periodic_table['Calcium'] = {'A': 40.078, 'Symbol': 'Ca', 'Z': 20, 'Group': 2, 'Period': 4}
-periodic_table['Scandium'] = {'A': 44.95591, 'Symbol': 'Sc', 'Z': 21, 'Group': 3, 'Period': 4}
-periodic_table['Titanium'] = {'A': 47.867, 'Symbol': 'Ti', 'Z': 22, 'Group': 4, 'Period': 4}
-periodic_table['Vanadium'] = {'A': 50.9415, 'Symbol': 'V', 'Z': 23, 'Group': 5, 'Period': 4}
-periodic_table['Chromium'] = {'A': 51.9961, 'Symbol': 'Cr', 'Z': 24, 'Group': 6, 'Period': 4}
-periodic_table['Manganese'] = {'A': 54.938049, 'Symbol': 'Mn', 'Z': 25, 'Group': 7, 'Period': 4}
-periodic_table['Iron'] = {'A': 55.845, 'Symbol': 'Fe', 'Z': 26, 'Group': 8, 'Period': 4}
-periodic_table['Cobalt'] = {'A': 58.9332, 'Symbol': 'Co', 'Z': 27, 'Group': 9, 'Period': 4}
-periodic_table['Nickel'] = {'A': 58.6934, 'Symbol': 'Ni', 'Z': 28, 'Group': 10, 'Period': 4}
-periodic_table['Copper'] = {'A': 63.546, 'Symbol': 'Cu', 'Z': 29, 'Group': 11, 'Period': 4}
-periodic_table['Zinc'] = {'A': 65.409, 'Symbol': 'Zn', 'Z': 30, 'Group': 12, 'Period': 4}
-periodic_table['Gallium'] = {'A': 69.723, 'Symbol': 'Ga', 'Z': 31, 'Group': 13, 'Period': 4}
-periodic_table['Germanium'] = {'A': 72.64, 'Symbol': 'Ge', 'Z': 32, 'Group': 14, 'Period': 4}
-periodic_table['Arsenic'] = {'A': 74.9216, 'Symbol': 'As', 'Z': 33, 'Group': 15, 'Period': 4}
-periodic_table['Selenium'] = {'A': 78.96, 'Symbol': 'Se', 'Z': 34, 'Group': 16, 'Period': 4}
-periodic_table['Bromine'] = {'A': 79.904, 'Symbol': 'Br', 'Z': 35, 'Group': 17, 'Period': 4}
-periodic_table['Krypton'] = {'A': 83.798, 'Symbol': 'Kr', 'Z': 36, 'Group': 18, 'Period': 4}
-periodic_table['Rubidium'] = {'A': 85.4678, 'Symbol': 'Rb', 'Z': 37, 'Group': 1, 'Period': 5}
-periodic_table['Strontium'] = {'A': 87.62, 'Symbol': 'Sr', 'Z': 38, 'Group': 2, 'Period': 5}
-periodic_table['Yttrium'] = {'A': 88.90585, 'Symbol': 'Y', 'Z': 39, 'Group': 3, 'Period': 5}
-periodic_table['Zirconium'] = {'A': 91.224, 'Symbol': 'Zr', 'Z': 40, 'Group': 4, 'Period': 5}
-periodic_table['Niobium'] = {'A': 92.90638, 'Symbol': 'Nb', 'Z': 41, 'Group': 5, 'Period': 5}
-periodic_table['Molybdenum'] = {'A': 95.94, 'Symbol': 'Mo', 'Z': 42, 'Group': 6, 'Period': 5}
-periodic_table['Technetium'] = {'A': 98.0, 'Symbol': 'Tc', 'Z': 43, 'Group': 7, 'Period': 5}
-periodic_table['Ruthenium'] = {'A': 101.07, 'Symbol': 'Ru', 'Z': 44, 'Group': 8, 'Period': 5}
-periodic_table['Rhodium'] = {'A': 102.9055, 'Symbol': 'Rh', 'Z': 45, 'Group': 9, 'Period': 5}
-periodic_table['Palladium'] = {'A': 106.42, 'Symbol': 'Pd', 'Z': 46, 'Group': 10, 'Period': 5}
-periodic_table['Silver'] = {'A': 107.8682, 'Symbol': 'Ag', 'Z': 47, 'Group': 11, 'Period': 5}
-periodic_table['Cadmium'] = {'A': 112.411, 'Symbol': 'Cd', 'Z': 48, 'Group': 12, 'Period': 5}
-periodic_table['Indium'] = {'A': 114.818, 'Symbol': 'In', 'Z': 49, 'Group': 13, 'Period': 5}
-periodic_table['Tin'] = {'A': 118.71, 'Symbol': 'Sn', 'Z': 50, 'Group': 14, 'Period': 5}
-periodic_table['Antimony'] = {'A': 121.76, 'Symbol': 'Sb', 'Z': 51, 'Group': 15, 'Period': 5}
-periodic_table['Tellurium'] = {'A': 127.6, 'Symbol': 'Te', 'Z': 52, 'Group': 16, 'Period': 5}
-periodic_table['Iodine'] = {'A': 126.90447, 'Symbol': 'I', 'Z': 53, 'Group': 17, 'Period': 5}
-periodic_table['Xenon'] = {'A': 131.293, 'Symbol': 'Xe', 'Z': 54, 'Group': 18, 'Period': 5}
-periodic_table['Caesium'] = {'A': 132.90545, 'Symbol': 'Cs', 'Z': 55, 'Group': 1, 'Period': 6}
-periodic_table['Barium'] = {'A': 137.327, 'Symbol': 'Ba', 'Z': 56, 'Group': 2, 'Period': 6}
-periodic_table['Gadolinium'] = {'A': 157.249, 'Symbol': 'Gd', 'Z': 64, 'Group': 3, 'Period': 6}
-periodic_table['Gadolinium160'] = {'A': 159.9270612, 'Symbol': 'Gd160', 'Z': 64, 'Group': 3, 'Period': 6}
-periodic_table['Lutetium'] = {'A': 174.967, 'Symbol': 'Lu', 'Z': 71, 'Group': 3, 'Period': 6}
-periodic_table['Hafnium'] = {'A': 178.49, 'Symbol': 'Hf', 'Z': 72, 'Group': 4, 'Period': 6}
-periodic_table['Tantalum'] = {'A': 180.9479, 'Symbol': 'Ta', 'Z': 73, 'Group': 5, 'Period': 6}
-periodic_table['Tungsten'] = {'A': 183.84, 'Symbol': 'W', 'Z': 74, 'Group': 6, 'Period': 6}
-periodic_table['Rhenium'] = {'A': 186.207, 'Symbol': 'Re', 'Z': 75, 'Group': 7, 'Period': 6}
-periodic_table['Osmium'] = {'A': 190.23, 'Symbol': 'Os', 'Z': 76, 'Group': 8, 'Period': 6}
-periodic_table['Iridium'] = {'A': 192.217, 'Symbol': 'Ir', 'Z': 77, 'Group': 9, 'Period': 6}
-periodic_table['Platinum'] = {'A': 195.078, 'Symbol': 'Pt', 'Z': 78, 'Group': 10, 'Period': 6}
-periodic_table['Gold'] = {'A': 196.96655, 'Symbol': 'Au', 'Z': 79, 'Group': 11, 'Period': 6}
-periodic_table['Mercury'] = {'A': 200.59, 'Symbol': 'Hg', 'Z': 80, 'Group': 12, 'Period': 6}
-periodic_table['Thallium'] = {'A': 204.3833, 'Symbol': 'Tl', 'Z': 81, 'Group': 13, 'Period': 6}
-periodic_table['Lead'] = {'A': 207.2, 'Symbol': 'Pb', 'Z': 82, 'Group': 14, 'Period': 6}
-periodic_table['Bismuth'] = {'A': 208.98038, 'Symbol': 'Bi', 'Z': 83, 'Group': 15, 'Period': 6}
-periodic_table['Polonium'] = {'A': 210.0, 'Symbol': 'Po', 'Z': 84, 'Group': 16, 'Period': 6}
-periodic_table['Astatine'] = {'A': 210.0, 'Symbol': 'At', 'Z': 85, 'Group': 17, 'Period': 6}
-periodic_table['Radon'] = {'A': 220.0, 'Symbol': 'Rn', 'Z': 86, 'Group': 18, 'Period': 6}
-periodic_table['Francium'] = {'A': 223.0, 'Symbol': 'Fr', 'Z': 87, 'Group': 1, 'Period': 7}
-periodic_table['Radium'] = {'A': 226.0, 'Symbol': 'Ra', 'Z': 88, 'Group': 2, 'Period': 7}
-periodic_table['Actinium'] = {'A': 227.0, 'Symbol': 'Ac', 'Z': 89, 'Group': 3, 'Period': 7}
-periodic_table['Thorium'] = {'A': 232.0381, 'Symbol': 'Th', 'Z': 90, 'Group': 102, 'Period': 7}
-periodic_table['Protactinium'] = {'A': 231.0359, 'Symbol': 'Pa', 'Z': 91, 'Group': 102, 'Period': 7}
-periodic_table['Uranium'] = {'A': 238.02891, 'Symbol': 'U', 'Z': 92, 'Group': 102, 'Period': 7}
-periodic_table['Neptunium'] = {'A': 237.0, 'Symbol': 'Np', 'Z': 93, 'Group': 102, 'Period': 7}
-periodic_table['Plutonium'] = {'A': 244.0, 'Symbol': 'Pu', 'Z': 94, 'Group': 102, 'Period': 7}
-periodic_table['Americium'] = {'A': 243.0, 'Symbol': 'Am', 'Z': 95, 'Group': 102, 'Period': 7}
-periodic_table['Curium'] = {'A': 247.0, 'Symbol': 'Cm', 'Z': 96, 'Group': 102, 'Period': 7}
-periodic_table['Berkelium'] = {'A': 247.0, 'Symbol': 'Bk', 'Z': 97, 'Group': 102, 'Period': 7}
-periodic_table['Californium'] = {'A': 251.0, 'Symbol': 'Cf', 'Z': 98, 'Group': 102, 'Period': 7}
-periodic_table['Einsteinium'] = {'A': 252.0, 'Symbol': 'Es', 'Z': 99, 'Group': 102, 'Period': 7}
-periodic_table['Fermium'] = {'A': 257.0, 'Symbol': 'Fm', 'Z': 100, 'Group': 102, 'Period': 7}
-periodic_table['Mendelevium'] = {'A': 258.0, 'Symbol': 'Md', 'Z': 101, 'Group': 102, 'Period': 7}
-periodic_table['Nobelium'] = {'A': 259.0, 'Symbol': 'No', 'Z': 102, 'Group': 102, 'Period': 7}
-periodic_table['Lawrencium'] = {'A': 262.0, 'Symbol': 'Lr', 'Z': 103, 'Group': 3, 'Period': 7}
-periodic_table['Rutherfordium'] = {'A': 267.0, 'Symbol': 'Rf', 'Z': 104, 'Group': 4, 'Period': 7}
-periodic_table['Dubnium'] = {'A': 270.0, 'Symbol': 'Db', 'Z': 105, 'Group': 5, 'Period': 7}
-periodic_table['Seaborgium'] = {'A': 269.0, 'Symbol': 'Sg', 'Z': 106, 'Group': 6, 'Period': 7}
-periodic_table['Bohrium'] = {'A': 270.0, 'Symbol': 'Bh', 'Z': 107, 'Group': 7, 'Period': 7}
-periodic_table['Hassium'] = {'A': 270.0, 'Symbol': 'Hs', 'Z': 108, 'Group': 8, 'Period': 7}
-periodic_table['Meitnerium'] = {'A': 278.0, 'Symbol': 'Mt', 'Z': 109, 'Group': 9, 'Period': 7}
-periodic_table['Darmstadtium'] = {'A': 281.0, 'Symbol': 'Ds', 'Z': 110, 'Group': 10, 'Period': 7}
-periodic_table['Roentgenium'] = {'A': 281.0, 'Symbol': 'Rg', 'Z': 111, 'Group': 11, 'Period': 7}
-periodic_table['Copernicium'] = {'A': 285.0, 'Symbol': 'Cn', 'Z': 112, 'Group': 13, 'Period': 7}
-periodic_table['Nihonian'] = {'A': 286.0, 'Symbol': 'Nh', 'Z': 113, 'Group': 12, 'Period': 7}
-periodic_table['Flerovium'] = {'A': 289.0, 'Symbol': 'Fl', 'Z': 114, 'Group': 15, 'Period': 7}
-periodic_table['Moscovium'] = {'A': 289.0, 'Symbol': 'Mc', 'Z': 115, 'Group': 14, 'Period': 7}
-periodic_table['Livermorium'] = {'A': 293.0, 'Symbol': 'Lv', 'Z': 116, 'Group': 16, 'Period': 7}
-periodic_table['Tennesine'] = {'A': 293.0, 'Symbol': 'Ts', 'Z': 117, 'Group': 16, 'Period': 7}
-periodic_table['Oganesson'] = {'A': 294.0, 'Symbol': 'Og', 'Z': 118, 'Group': 16, 'Period': 7}
-
-elements = []
-for k in periodic_table:
-    S = periodic_table[k]['Symbol']
-    A = periodic_table[k]['A']
-    Z = periodic_table[k]['Z']
-    G = periodic_table[k]['Group']
-    P = periodic_table[k]['Period']
-    exec(k + " = Atom(S, A, Z, G, P, name='%s')"%k)
-    exec('elements.append(' + k + ')')
-#  exec(k + " = periodic_table['" + k + "']")
-del k
+periodic_table: dict[str, dict[str, Any]] = {}
+Hydrogen = Atom(A=1.00794, Symbol='H', Z=1, Group=1, Period=1, name='Hydrogen')
+Deuterium = Atom(A=2.01410178, Symbol='D', Z=1, Group=1, Period=1, name='Deuterium')
+Tritium = Atom(A=3.0160492, Symbol='T', Z=1, Group=1, Period=1, name='Tritium')
+Helium = Atom(A=4.002602, Symbol='He', Z=2, Group=18, Period=1, name='Helium')
+Lithium = Atom(A=6.941, Symbol='Li', Z=3, Group=1, Period=2, name='Lithium')
+Lithium6 = Atom(A=6.01512279516, Symbol='Li6', Z=3, Group=1, Period=2, name='Lithium6')
+Lithium7 = Atom(A=7.016004558, Symbol='Li7', Z=3, Group=1, Period=2, name='Lithium7')
+Beryllium = Atom(A=9.012182, Symbol='Be', Z=4, Group=2, Period=2, name='Beryllium')
+Boron = Atom(A=10.811, Symbol='B', Z=5, Group=13, Period=2, name='Boron')
+Carbon = Atom(A=12.0107, Symbol='C', Z=6, Group=14, Period=2, name='Carbon')
+Nitrogen = Atom(A=14.0067, Symbol='N', Z=7, Group=15, Period=2, name='Nitrogen')
+Oxygen = Atom(A=15.9994, Symbol='O', Z=8, Group=16, Period=2, name='Oxygen')
+Fluorine = Atom(A=18.9984032, Symbol='F', Z=9, Group=17, Period=2, name='Fluorine')
+Neon = Atom(A=20.1797, Symbol='Ne', Z=10, Group=18, Period=2, name='Neon')
+Sodium = Atom(A=22.98977, Symbol='Na', Z=11, Group=1, Period=3, name='Sodium')
+Magnesium = Atom(A=24.305, Symbol='Mg', Z=12, Group=2, Period=3, name='Magnesium')
+Aluminium = Atom(A=26.981538, Symbol='Al', Z=13, Group=13, Period=3, name='Aluminium')
+Silicon = Atom(A=28.0855, Symbol='Si', Z=14, Group=14, Period=3, name='Silicon')
+Phosphorus = Atom(A=30.973761, Symbol='P', Z=15, Group=15, Period=3, name='Phosphorus')
+Sulfur = Atom(A=32.065, Symbol='S', Z=16, Group=16, Period=3, name='Sulfur')
+Chlorine = Atom(A=35.453, Symbol='Cl', Z=17, Group=17, Period=3, name='Chlorine')
+Argon = Atom(A=39.948, Symbol='Ar', Z=18, Group=18, Period=3, name='Argon')
+Potassium = Atom(A=39.0983, Symbol='K', Z=19, Group=1, Period=4, name='Potassium')
+Calcium = Atom(A=40.078, Symbol='Ca', Z=20, Group=2, Period=4, name='Calcium')
+Scandium = Atom(A=44.95591, Symbol='Sc', Z=21, Group=3, Period=4, name='Scandium')
+Titanium = Atom(A=47.867, Symbol='Ti', Z=22, Group=4, Period=4, name='Titanium')
+Vanadium = Atom(A=50.9415, Symbol='V', Z=23, Group=5, Period=4, name='Vanadium')
+Chromium = Atom(A=51.9961, Symbol='Cr', Z=24, Group=6, Period=4, name='Chromium')
+Manganese = Atom(A=54.938049, Symbol='Mn', Z=25, Group=7, Period=4, name='Manganese')
+Iron = Atom(A=55.845, Symbol='Fe', Z=26, Group=8, Period=4, name='Iron')
+Cobalt = Atom(A=58.9332, Symbol='Co', Z=27, Group=9, Period=4, name='Cobalt')
+Nickel = Atom(A=58.6934, Symbol='Ni', Z=28, Group=10, Period=4, name='Nickel')
+Copper = Atom(A=63.546, Symbol='Cu', Z=29, Group=11, Period=4, name='Copper')
+Zinc = Atom(A=65.409, Symbol='Zn', Z=30, Group=12, Period=4, name='Zinc')
+Gallium = Atom(A=69.723, Symbol='Ga', Z=31, Group=13, Period=4, name='Gallium')
+Germanium = Atom(A=72.64, Symbol='Ge', Z=32, Group=14, Period=4, name='Germanium')
+Arsenic = Atom(A=74.9216, Symbol='As', Z=33, Group=15, Period=4, name='Arsenic')
+Selenium = Atom(A=78.96, Symbol='Se', Z=34, Group=16, Period=4, name='Selenium')
+Bromine = Atom(A=79.904, Symbol='Br', Z=35, Group=17, Period=4, name='Bromine')
+Krypton = Atom(A=83.798, Symbol='Kr', Z=36, Group=18, Period=4, name='Krypton')
+Rubidium = Atom(A=85.4678, Symbol='Rb', Z=37, Group=1, Period=5, name='Rubidium')
+Strontium = Atom(A=87.62, Symbol='Sr', Z=38, Group=2, Period=5, name='Strontium')
+Yttrium = Atom(A=88.90585, Symbol='Y', Z=39, Group=3, Period=5, name='Yttrium')
+Zirconium = Atom(A=91.224, Symbol='Zr', Z=40, Group=4, Period=5, name='Zirconium')
+Niobium = Atom(A=92.90638, Symbol='Nb', Z=41, Group=5, Period=5, name='Niobium')
+Molybdenum = Atom(A=95.94, Symbol='Mo', Z=42, Group=6, Period=5, name='Molybdenum')
+Technetium = Atom(A=98.0, Symbol='Tc', Z=43, Group=7, Period=5, name='Technetium')
+Ruthenium = Atom(A=101.07, Symbol='Ru', Z=44, Group=8, Period=5, name='Ruthenium')
+Rhodium = Atom(A=102.9055, Symbol='Rh', Z=45, Group=9, Period=5, name='Rhodium')
+Palladium = Atom(A=106.42, Symbol='Pd', Z=46, Group=10, Period=5, name='Palladium')
+Silver = Atom(A=107.8682, Symbol='Ag', Z=47, Group=11, Period=5, name='Silver')
+Cadmium = Atom(A=112.411, Symbol='Cd', Z=48, Group=12, Period=5, name='Cadmium')
+Indium = Atom(A=114.818, Symbol='In', Z=49, Group=13, Period=5, name='Indium')
+Tin = Atom(A=118.71, Symbol='Sn', Z=50, Group=14, Period=5, name='Tin')
+Antimony = Atom(A=121.76, Symbol='Sb', Z=51, Group=15, Period=5, name='Antimony')
+Tellurium = Atom(A=127.6, Symbol='Te', Z=52, Group=16, Period=5, name='Tellurium')
+Iodine = Atom(A=126.90447, Symbol='I', Z=53, Group=17, Period=5, name='Iodine')
+Xenon = Atom(A=131.293, Symbol='Xe', Z=54, Group=18, Period=5, name='Xenon')
+Caesium = Atom(A=132.90545, Symbol='Cs', Z=55, Group=1, Period=6, name='Caesium')
+Barium = Atom(A=137.327, Symbol='Ba', Z=56, Group=2, Period=6, name='Barium')
+Gadolinium = Atom(A=157.249, Symbol='Gd', Z=64, Group=3, Period=6, name='Gadolinium')
+Gadolinium160 = Atom(A=159.9270612, Symbol='Gd160', Z=64, Group=3, Period=6, name='Gadolinium160')
+Lutetium = Atom(A=174.967, Symbol='Lu', Z=71, Group=3, Period=6, name='Lutetium')
+Hafnium = Atom(A=178.49, Symbol='Hf', Z=72, Group=4, Period=6, name='Hafnium')
+Tantalum = Atom(A=180.9479, Symbol='Ta', Z=73, Group=5, Period=6, name='Tantalum')
+Tungsten = Atom(A=183.84, Symbol='W', Z=74, Group=6, Period=6, name='Tungsten')
+Rhenium = Atom(A=186.207, Symbol='Re', Z=75, Group=7, Period=6, name='Rhenium')
+Osmium = Atom(A=190.23, Symbol='Os', Z=76, Group=8, Period=6, name='Osmium')
+Iridium = Atom(A=192.217, Symbol='Ir', Z=77, Group=9, Period=6, name='Iridium')
+Platinum = Atom(A=195.078, Symbol='Pt', Z=78, Group=10, Period=6, name='Platinum')
+Gold = Atom(A=196.96655, Symbol='Au', Z=79, Group=11, Period=6, name='Gold')
+Mercury = Atom(A=200.59, Symbol='Hg', Z=80, Group=12, Period=6, name='Mercury')
+Thallium = Atom(A=204.3833, Symbol='Tl', Z=81, Group=13, Period=6, name='Thallium')
+Lead = Atom(A=207.2, Symbol='Pb', Z=82, Group=14, Period=6, name='Lead')
+Bismuth = Atom(A=208.98038, Symbol='Bi', Z=83, Group=15, Period=6, name='Bismuth')
+Polonium = Atom(A=210.0, Symbol='Po', Z=84, Group=16, Period=6, name='Polonium')
+Astatine = Atom(A=210.0, Symbol='At', Z=85, Group=17, Period=6, name='Astatine')
+Radon = Atom(A=220.0, Symbol='Rn', Z=86, Group=18, Period=6, name='Radon')
+Francium = Atom(A=223.0, Symbol='Fr', Z=87, Group=1, Period=7, name='Francium')
+Radium = Atom(A=226.0, Symbol='Ra', Z=88, Group=2, Period=7, name='Radium')
+Actinium = Atom(A=227.0, Symbol='Ac', Z=89, Group=3, Period=7, name='Actinium')
+Thorium = Atom(A=232.0381, Symbol='Th', Z=90, Group=102, Period=7, name='Thorium')
+Protactinium = Atom(A=231.0359, Symbol='Pa', Z=91, Group=102, Period=7, name='Protactinium')
+Uranium = Atom(A=238.02891, Symbol='U', Z=92, Group=102, Period=7, name='Uranium')
+Neptunium = Atom(A=237.0, Symbol='Np', Z=93, Group=102, Period=7, name='Neptunium')
+Plutonium = Atom(A=244.0, Symbol='Pu', Z=94, Group=102, Period=7, name='Plutonium')
+Americium = Atom(A=243.0, Symbol='Am', Z=95, Group=102, Period=7, name='Americium')
+Curium = Atom(A=247.0, Symbol='Cm', Z=96, Group=102, Period=7, name='Curium')
+Berkelium = Atom(A=247.0, Symbol='Bk', Z=97, Group=102, Period=7, name='Berkelium')
+Californium = Atom(A=251.0, Symbol='Cf', Z=98, Group=102, Period=7, name='Californium')
+Einsteinium = Atom(A=252.0, Symbol='Es', Z=99, Group=102, Period=7, name='Einsteinium')
+Fermium = Atom(A=257.0, Symbol='Fm', Z=100, Group=102, Period=7, name='Fermium')
+Mendelevium = Atom(A=258.0, Symbol='Md', Z=101, Group=102, Period=7, name='Mendelevium')
+Nobelium = Atom(A=259.0, Symbol='No', Z=102, Group=102, Period=7, name='Nobelium')
+Lawrencium = Atom(A=262.0, Symbol='Lr', Z=103, Group=3, Period=7, name='Lawrencium')
+Rutherfordium = Atom(A=267.0, Symbol='Rf', Z=104, Group=4, Period=7, name='Rutherfordium')
+Dubnium = Atom(A=270.0, Symbol='Db', Z=105, Group=5, Period=7, name='Dubnium')
+Seaborgium = Atom(A=269.0, Symbol='Sg', Z=106, Group=6, Period=7, name='Seaborgium')
+Bohrium = Atom(A=270.0, Symbol='Bh', Z=107, Group=7, Period=7, name='Bohrium')
+Hassium = Atom(A=270.0, Symbol='Hs', Z=108, Group=8, Period=7, name='Hassium')
+Meitnerium = Atom(A=278.0, Symbol='Mt', Z=109, Group=9, Period=7, name='Meitnerium')
+Darmstadtium = Atom(A=281.0, Symbol='Ds', Z=110, Group=10, Period=7, name='Darmstadtium')
+Roentgenium = Atom(A=281.0, Symbol='Rg', Z=111, Group=11, Period=7, name='Roentgenium')
+Copernicium = Atom(A=285.0, Symbol='Cn', Z=112, Group=13, Period=7, name='Copernicium')
+Nihonian = Atom(A=286.0, Symbol='Nh', Z=113, Group=12, Period=7, name='Nihonian')
+Flerovium = Atom(A=289.0, Symbol='Fl', Z=114, Group=15, Period=7, name='Flerovium')
+Moscovium = Atom(A=289.0, Symbol='Mc', Z=115, Group=14, Period=7, name='Moscovium')
+Livermorium = Atom(A=293.0, Symbol='Lv', Z=116, Group=16, Period=7, name='Livermorium')
+Tennesine = Atom(A=293.0, Symbol='Ts', Z=117, Group=16, Period=7, name='Tennesine')
+Oganesson = Atom(A=294.0, Symbol='Og', Z=118, Group=16, Period=7, name='Oganesson')
 
 Electron = Particle(charge=-echarge,mass=emass,Symbol='e-',name='Electron')
 Positron = Particle(charge=+echarge,mass=emass,Symbol='e+',name='Positron')
