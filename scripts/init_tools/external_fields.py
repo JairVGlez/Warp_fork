@@ -96,7 +96,7 @@ class SstfLaser( object ):
         self.inv_w02 = 1./w0**2
 
         # Propagation speed
-        if forward_propagating is True:
+        if forward_propagating:
             self.vg = c
         else:
             self.vg = -c

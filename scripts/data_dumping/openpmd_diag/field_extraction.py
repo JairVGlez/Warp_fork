@@ -155,7 +155,7 @@ def get_circ_dataset( em, quantity, lgather, iz_slice=None,
     # Gather array if lgather = True
     # (Multi-proc operations using gather)
     # Only done in non-parallel case
-    if lgather is True:
+    if lgather:
         F = em.gatherarray( F )
         if em.circ_m > 0:
             F_circ = em.gatherarray( F_circ )
@@ -249,7 +249,7 @@ def get_cart3d_dataset( em, quantity, lgather, iz_slice=None,
     # Gather array if lgather = True
     # (Mutli-proc operations using gather)
     # Only done in non-parallel case
-    if lgather is True:
+    if lgather:
         if iz_slice is not None:
             raise ValueError('Incompatible parameters in '
                 'get_cart2d_dataset: lgather=True and iz_slice not None')
@@ -326,7 +326,7 @@ def get_cart2d_dataset( em, quantity, lgather, iz_slice=None,
     # Gather array if lgather = True
     # (Mutli-proc operations using gather)
     # Only done in non-parallel case
-    if lgather is True:
+    if lgather:
         if iz_slice is not None:
             raise ValueError('Incompatible parameters in '
                 'get_cart2d_dataset: lgather=True and iz_slice not None')
@@ -387,7 +387,7 @@ def get_cart1d_dataset( em, quantity, lgather, iz_slice=None,
     # Gather array if lgather = True
     # (Mutli-proc operations using gather)
     # Only done in non-parallel case
-    if lgather is True:
+    if lgather:
         if iz_slice is not None:
             raise ValueError('Incompatible parameters in '
                 'get_cart2d_dataset: lgather=True and iz_slice not None')

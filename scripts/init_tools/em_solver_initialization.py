@@ -67,7 +67,7 @@ def initialize_em_solver( stencil, dim,
     An instance of EM3D or EM3DFFT
     """
     # Run a few checks
-    if (norder is not None) and ((stencil in [0, -1]) is False):
+    if (norder is not None) and (not (stencil in [0, -1])):
         raise ValueError("The parameter norder can only be set \n"
             "for the Yee solver (stencil 0) or spectral solver (stencil -1)")
 
