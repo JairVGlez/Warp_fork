@@ -9,6 +9,7 @@ warpstarttime = time.perf_counter()
 import __main__
 import builtins
 import sys
+import typing
 from typing import Literal
 
 #from line_profiler import LineProfiler
@@ -116,6 +117,9 @@ else:
     from .chopy import *
     #from .em2dpy import *
     from .em3dpy import *
+
+if typing.TYPE_CHECKING:
+    from ._fortran_imports import *
 
 from .utils.warputils import *
 from . import controllers

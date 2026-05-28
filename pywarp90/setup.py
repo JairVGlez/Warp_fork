@@ -141,6 +141,8 @@ with open('../scripts/__version__.py', 'w') as ff:
     ff.write('__hash__ = "%s"\n'%os.popen('git log -n 1 --pretty=%h').read().strip())
     ff.write('__fullhash__ = "%s"\n'%os.popen('git log -n 1 --pretty=%H').read().strip())
 
+os.system("python3 ../generate_pyi/generate_allpyi.py")
+
 setuptools.setup(name = 'warp',
                  packages = ['warp', 'warpoptions', 'warp_parallel',
                              'warp.attic',
@@ -162,6 +164,7 @@ setuptools.setup(name = 'warp',
                                 'warp_parallel':'../scripts/warp_parallel'},
                  package_data = {'warp': ['../scripts/diagnostics/palettes/*.gs',
                                           '../scripts/diagnostics/palettes/*.gp',
+                                          '../scripts/**/*.pyi',
                                           '../scripts/particles/aladdin_8.txt']},
                  version = '5.0',
                  author = 'David P. Grote, Jean-Luc Vay, et. al.',

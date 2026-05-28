@@ -22,6 +22,11 @@ __version__.py
 pywarp90/dist
 pywarp90/warp.egg-info
 
+# Ignore automatically generated stub and typing files
+scripts/*.pyi
+scripts/**/_forthon_typing.py
+scripts/**/_fortran_imports.py
+
 # Ignore local definitions for building
 Makefile.local
 Makefile.local3

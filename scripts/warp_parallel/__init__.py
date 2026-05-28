@@ -55,6 +55,7 @@ else:
     lpyMPIactive = False
     lmpi4pyactive = False
 
+lparallel: bool
 lparallel = (npes > 1)
 
 if not lparallel:
