@@ -1226,7 +1226,7 @@ c         --- Note that Aamp is the unnormalized vector potential
 
         c0 = 2.0*(2.0*k*k + 2.0*k + 1.0)/(2.0*k + 1.0)**3
         b = (2.0 + c0)/(2.0 - c0)
-        a = 2.0*b - 1.0
+        a = 2.0*(b - 1.0)
 
         do inew=0, nnewphotons-1
 
