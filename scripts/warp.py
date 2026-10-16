@@ -9,8 +9,7 @@ warpstarttime = time.perf_counter()
 import __main__
 import builtins
 import sys
-import typing
-from typing import Literal
+import typing as base_typing
 
 #from line_profiler import LineProfiler
 #lineprofile = LineProfiler()
@@ -118,7 +117,7 @@ else:
     #from .em2dpy import *
     from .em3dpy import *
 
-if typing.TYPE_CHECKING:
+if base_typing.TYPE_CHECKING:
     from ._fortran_imports import *
 
 from .utils.warputils import *
@@ -1119,7 +1118,7 @@ def restart(filename,suffix='',verbose=false,skip=[],
 ##############################################################################
 
 ##############################################################################
-def printtimers(file=None,lminmax=0,mintime=0.,icontrollers:Literal[0,1,2]=2):
+def printtimers(file=None,lminmax=0,mintime=0.,icontrollers:base_typing.Literal[0,1,2]=2):
     """
   Print timers in a nice annotated format
     - file=None: Optional input file. If it is not include, stdout is used. It can
@@ -1271,7 +1270,7 @@ def printtimers(file=None,lminmax=0,mintime=0.,icontrollers:Literal[0,1,2]=2):
     if closeit:
         ff.close()
 
-def printtimersordered(file=None,depth:Literal[0,1,2,3,4]=3,mintime=0.1):
+def printtimersordered(file=None,depth:base_typing.Literal[0,1,2,3,4]=3,mintime=0.1):
     """
   Print timers in a nice annotated format, sorted by call sequence
     - file=None: Optional input file. If it is not include, stdout is used. It
