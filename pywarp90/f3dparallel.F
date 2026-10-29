@@ -3880,6 +3880,7 @@ c=============================================================================
      &                          -nyguardphi:nylocal+nyguardphi,
      &                          -nzguardphi:nzlocal+nzguardphi)
       type(Decomposition):: fsdecomp
+      real(kind=8),allocatable:: sendbuffer(:,:,:,:)
 
 c Exchange the potential on the boundary and/or in the gaurd cells.
 
@@ -3896,12 +3897,12 @@ c     --- Generate the MPI data types needed for the communication.
      &                    ils,ile,ius,iue,fsdecomp,messagedata)
 
 c     --- Now, do all of the message passing at once.
-c     --- Note that there should be no problem with having phi being both
-c     --- the send and receive buffer since there is no overlap between
-c     --- out going and in coming data.
+c     --- Snapshot outgoing values before each directional exchange.
+c     --- Receives must not overwrite data still needed by sends.
       if (fsdecomp%nxprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_x
-        call MPI_ALLTOALLW(phi,messagedata%xsendcounts,messagedata%xdispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%xsendcounts,messagedata%xdispls,
      &                     messagedata%xsendtypes,
      &                     phi,messagedata%xrecvcounts,messagedata%xdispls,
      &                     messagedata%xrecvtypes,
@@ -3909,7 +3910,8 @@ c     --- out going and in coming data.
       endif
       if (fsdecomp%nyprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_y
-        call MPI_ALLTOALLW(phi,messagedata%ysendcounts,messagedata%ydispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%ysendcounts,messagedata%ydispls,
      &                     messagedata%ysendtypes,
      &                     phi,messagedata%yrecvcounts,messagedata%ydispls,
      &                     messagedata%yrecvtypes,
@@ -3917,7 +3919,8 @@ c     --- out going and in coming data.
       endif
       if (fsdecomp%nzprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_z
-        call MPI_ALLTOALLW(phi,messagedata%zsendcounts,messagedata%zdispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%zsendcounts,messagedata%zdispls,
      &                     messagedata%zsendtypes,
      &                     phi,messagedata%zrecvcounts,messagedata%zdispls,
      &                     messagedata%zrecvtypes,
@@ -3949,6 +3952,7 @@ c=============================================================================
      &                          -nyguardphi:nylocal,
      &                          -nxguardphi:nzlocal)
       type(Decomposition):: fsdecomp
+      real(kind=8),allocatable:: sendbuffer(:,:,:,:)
 
 c Exchange epsiloncoarse on in the guard cells.
 
@@ -3965,12 +3969,12 @@ c     --- Generate the MPI data types needed for the communication.
      &                    ils,ile,ius,iue,fsdecomp,messagedata)
 
 c     --- Now, do all of the message passing at once.
-c     --- Note that there should be no problem with having phi being both
-c     --- the send and receive buffer since there is no overlap between
-c     --- out going and in coming data.
+c     --- Snapshot outgoing values before each directional exchange.
+c     --- Receives must not overwrite data still needed by sends.
       if (fsdecomp%nxprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_x
-        call MPI_ALLTOALLW(phi,messagedata%xsendcounts,messagedata%xdispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%xsendcounts,messagedata%xdispls,
      &                     messagedata%xsendtypes,
      &                     phi,messagedata%xrecvcounts,messagedata%xdispls,
      &                     messagedata%xrecvtypes,
@@ -3978,7 +3982,8 @@ c     --- out going and in coming data.
       endif
       if (fsdecomp%nyprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_y
-        call MPI_ALLTOALLW(phi,messagedata%ysendcounts,messagedata%ydispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%ysendcounts,messagedata%ydispls,
      &                     messagedata%ysendtypes,
      &                     phi,messagedata%yrecvcounts,messagedata%ydispls,
      &                     messagedata%yrecvtypes,
@@ -3986,7 +3991,8 @@ c     --- out going and in coming data.
       endif
       if (fsdecomp%nzprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_z
-        call MPI_ALLTOALLW(phi,messagedata%zsendcounts,messagedata%zdispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%zsendcounts,messagedata%zdispls,
      &                     messagedata%zsendtypes,
      &                     phi,messagedata%zrecvcounts,messagedata%zdispls,
      &                     messagedata%zrecvtypes,
@@ -4016,6 +4022,7 @@ c=============================================================================
      &                          -nyguardphi:nylocal+nyguardphi,
      &                          -nzguardphi:nzlocal+nzguardphi)
       type(Decomposition):: fsdecomp
+      real(kind=8),allocatable:: sendbuffer(:,:,:,:)
 
 c Exchange the potential on the boundary and/or in the gaurd cells.
 
@@ -4032,12 +4039,12 @@ c     --- Generate the MPI data types needed for the communication.
      &                    i1,i2,-i2,-i1,fsdecomp,messagedata)
 
 c     --- Now, do all of the message passing at once.
-c     --- Note that there should be no problem with having phi being both
-c     --- the send and receive buffer since there is no overlap between
-c     --- out going and in coming data.
+c     --- Snapshot outgoing values before each directional exchange.
+c     --- Receives must not overwrite data still needed by sends.
       if (fsdecomp%nxprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_x
-        call MPI_ALLTOALLW(phi,messagedata%xsendcounts,messagedata%xdispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%xsendcounts,messagedata%xdispls,
      &                     messagedata%xsendtypes,
      &                     phi,messagedata%xrecvcounts,messagedata%xdispls,
      &                     messagedata%xrecvtypes,
@@ -4045,7 +4052,8 @@ c     --- out going and in coming data.
       endif
       if (fsdecomp%nyprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_y
-        call MPI_ALLTOALLW(phi,messagedata%ysendcounts,messagedata%ydispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%ysendcounts,messagedata%ydispls,
      &                     messagedata%ysendtypes,
      &                     phi,messagedata%yrecvcounts,messagedata%ydispls,
      &                     messagedata%yrecvtypes,
@@ -4053,7 +4061,8 @@ c     --- out going and in coming data.
       endif
       if (fsdecomp%nzprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_z
-        call MPI_ALLTOALLW(phi,messagedata%zsendcounts,messagedata%zdispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%zsendcounts,messagedata%zdispls,
      &                     messagedata%zsendtypes,
      &                     phi,messagedata%zrecvcounts,messagedata%zdispls,
      &                     messagedata%zrecvtypes,
@@ -4083,6 +4092,7 @@ c=============================================================================
      &                          -nyguardres:nylocal+nyguardres,
      &                          -nzguardres:nzlocal+nzguardres)
       type(Decomposition):: fsdecomp
+      real(kind=8),allocatable:: sendbuffer(:,:,:,:)
 
 c Exchange the potential on the boundary and/or in the gaurd cells.
 c This is identical to mgexchange_phi, except for the lguardres=true
@@ -4101,12 +4111,12 @@ c     --- Generate the MPI data types needed for the communication.
      &                    i1,i2,-i2,-i1,fsdecomp,messagedata)
 
 c     --- Now, do all of the message passing at once.
-c     --- Note that there should be no problem with having res being both
-c     --- the send and receive buffer since there is no overlap between
-c     --- out going and in coming data.
+c     --- Snapshot outgoing values before each directional exchange.
+c     --- Receives must not overwrite data still needed by sends.
       if (fsdecomp%nxprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_x
-        call MPI_ALLTOALLW(res,messagedata%xsendcounts,messagedata%xdispls,
+        sendbuffer = res
+        call MPI_ALLTOALLW(sendbuffer,messagedata%xsendcounts,messagedata%xdispls,
      &                     messagedata%xsendtypes,
      &                     res,messagedata%xrecvcounts,messagedata%xdispls,
      &                     messagedata%xrecvtypes,
@@ -4114,7 +4124,8 @@ c     --- out going and in coming data.
       endif
       if (fsdecomp%nyprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_y
-        call MPI_ALLTOALLW(res,messagedata%ysendcounts,messagedata%ydispls,
+        sendbuffer = res
+        call MPI_ALLTOALLW(sendbuffer,messagedata%ysendcounts,messagedata%ydispls,
      &                     messagedata%ysendtypes,
      &                     res,messagedata%yrecvcounts,messagedata%ydispls,
      &                     messagedata%yrecvtypes,
@@ -4122,7 +4133,8 @@ c     --- out going and in coming data.
       endif
       if (fsdecomp%nzprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_z
-        call MPI_ALLTOALLW(res,messagedata%zsendcounts,messagedata%zdispls,
+        sendbuffer = res
+        call MPI_ALLTOALLW(sendbuffer,messagedata%zsendcounts,messagedata%zdispls,
      &                     messagedata%zsendtypes,
      &                     res,messagedata%zrecvcounts,messagedata%zdispls,
      &                     messagedata%zrecvtypes,
@@ -4152,6 +4164,7 @@ c=============================================================================
      &                          -nyguardphi:nylocal+nyguardphi,
      &                          -nzguardphi:nzlocal+nzguardphi)
       type(Decomposition):: fsdecomp
+      real(kind=8),allocatable:: sendbuffer(:,:,:,:)
 
 c Exchange the potential on the boundary and/or in the gaurd cells.
 
@@ -4168,12 +4181,12 @@ c     --- Generate the MPI data types needed for the communication.
      &                             i1,i2,-i2,-i1,fsdecomp,messagedata)
 
 c     --- Now, do all of the message passing at once.
-c     --- Note that there should be no problem with having phi being both
-c     --- the send and receive buffer since there is no overlap between
-c     --- out going and in coming data.
+c     --- Snapshot outgoing values before each directional exchange.
+c     --- Receives must not overwrite data still needed by sends.
       if (fsdecomp%nxprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_x
-        call MPI_ALLTOALLW(phi,messagedata%xsendcounts,messagedata%xdispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%xsendcounts,messagedata%xdispls,
      &                     messagedata%xsendtypes,
      &                     phi,messagedata%xrecvcounts,messagedata%xdispls,
      &                     messagedata%xrecvtypes,
@@ -4181,7 +4194,8 @@ c     --- out going and in coming data.
       endif
       if (fsdecomp%nyprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_y
-        call MPI_ALLTOALLW(phi,messagedata%ysendcounts,messagedata%ydispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%ysendcounts,messagedata%ydispls,
      &                     messagedata%ysendtypes,
      &                     phi,messagedata%yrecvcounts,messagedata%ydispls,
      &                     messagedata%yrecvtypes,
@@ -4189,7 +4203,8 @@ c     --- out going and in coming data.
       endif
       if (fsdecomp%nzprocs > 1) then
         mpi_comm_mpiisz = fsdecomp%mpi_comm_z
-        call MPI_ALLTOALLW(phi,messagedata%zsendcounts,messagedata%zdispls,
+        sendbuffer = phi
+        call MPI_ALLTOALLW(sendbuffer,messagedata%zsendcounts,messagedata%zdispls,
      &                     messagedata%zsendtypes,
      &                     phi,messagedata%zrecvcounts,messagedata%zdispls,
      &                     messagedata%zrecvtypes,
