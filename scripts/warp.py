@@ -15,11 +15,11 @@ import typing as base_typing
 #lineprofile = LineProfiler()
 
 # --- Only numpy is now supported.
-import numpy
+import numpy as np
 from numpy import *
 from numpy import random
-ArrayType = ndarray
-RandomArray = random
+ArrayType = np.ndarray
+RandomArray = np.random
 def gettypecode(x):
     return x.dtype.char
 def oldnonzero(a):
@@ -139,8 +139,8 @@ package('top')
 # --- Override the value of the true and false variables setup in Forthon.
 # --- This ensures that the correct values of true and false are obtained
 # --- directly from fortran (since different compilers use different values).
-tval = zeros(1,'l')
-fval = zeros(1,'l')
+tval = np.zeros(1,'l')
+fval = np.zeros(1,'l')
 getfortantruefalse(tval,fval)
 true = int(tval[0])
 false = int(fval[0])
@@ -230,7 +230,7 @@ top.starttimedump = top.starttime
 # --- only ~1.e15. 1./numpy.finfo('d').eps is the largest floating point
 # --- number such that the number minus 0.5 is correct (the 0.5 is needed
 # --- since it is used in nint).
-top.ssn = int(minimum(sys.maxsize,1./numpy.finfo('d').eps)/npes*me + 1)
+top.ssn = int(np.minimum(sys.maxsize,1./np.finfo('d').eps)/npes*me + 1)
 
 # --- Simple function to calculate Child-Langmuir current density
 def childlangmuir(v,d,q=None,m=None):
@@ -243,7 +243,7 @@ def childlangmuir(v,d,q=None,m=None):
     """
     if q is None: q = top.pgroup.sq[0]
     if m is None: m = top.pgroup.sm[0]
-    return 4./9.*eps0*sqrt(2.*q/m)*v**1.5/d**2
+    return 4./9.*eps0*np.sqrt(2.*q/m)*v**1.5/d**2
 
 # --- Create python version of dvnz (divisor not zero)
 def dvnz(x):
@@ -251,11 +251,11 @@ def dvnz(x):
   Used to protect is divides and square roots. Returns the argument, except when
   it is zero, then returns smallpos.
     """
-    if len(shape(x)) == 0:
+    if len(np.shape(x)) == 0:
         if x == 0.: return top.smallpos
         else:       return x
     else:
-        return where(x==0.,top.smallpos,x)
+        return np.where(x==0.,top.smallpos,x)
     #return sign(abs(x)+top.smallpos,x)
 
 #=============================================================================
@@ -342,7 +342,7 @@ def warpdoc():
 #=============================================================================
 # --- Convenience function for random numbers.
 def setseed(x=0,y=0):
-    random.seed((x,y))
+    np.random.seed((x,y))
 
 # --- Uniform distribution
 def ranf(x=None,i1=None,nbase=None):
@@ -356,15 +356,15 @@ def ranf(x=None,i1=None,nbase=None):
     """
     if not i1:
         if x is None:
-            return random.random()
+            return np.random.random()
         else:
-            return random.random(shape(x))
+            return np.random.random(np.shape(x))
     else:
         if not nbase: nbase = 2
-        n = prod(array(shape(array(x))))
-        result = zeros(n,'d')
+        n = np.prod(np.array(np.shape(np.array(x))))
+        result = np.zeros(n,'d')
         rnrevarray(n,result,i1,nbase)
-        result.shape = shape(x)
+        result.shape = np.shape(x)
         return result
 
 # --- Gaussian distribution
@@ -373,21 +373,21 @@ def ranf(x=None,i1=None,nbase=None):
 def rnormarray(x,i1=None,nbase1=None,nbase2=None):
     if not i1:
         try:
-            return random.standard_normal(shape(x))
+            return np.random.standard_normal(np.shape(x))
         except:
             # --- Use pseudo-random number generator
-            s = random.random(shape(x))
-            phi = 2.*pi*random.random(shape(x))
-            sq = sqrt(-2.*log(s))
-            return sq*cos(phi)
+            s = np.random.random(np.shape(x))
+            phi = 2.*np.pi*np.random.random(np.shape(x))
+            sq = np.sqrt(-2.*np.log(s))
+            return sq*np.cos(phi)
     else:
         # --- Use digit reversed random number generator
         if not nbase1: nbase1 = 2
         if not nbase2: nbase2 = 3
-        n = prod(array(shape(x)))
-        result = zeros(n,'d')
+        n = np.prod(np.array(np.shape(x)))
+        result = np.zeros(n,'d')
         rnormdig(i1,n,nbase1,nbase2,0.,result)
-        result.shape = shape(x)
+        result.shape = np.shape(x)
         return result
 
 #=============================================================================
@@ -484,7 +484,7 @@ def getappliedfieldsongrid(nx=None,ny=None,nz=None,
         zmax = 0.
 
     x,y,z = getmesh3d(xmin,dx,nx,ymin,dy,ny,zmin,dz,nz)
-    nxyz = prod(array(shape(x)))
+    nxyz = np.prod(np.array(np.shape(x)))
     x.shape = (nxyz,)
     y.shape = (nxyz,)
     z.shape = (nxyz,)
@@ -512,13 +512,13 @@ def getappliedfields(x,y,z,time=0.,js=0):
     try: n = len(x)
     except TypeError: n = 1
 
-    ex,ey,ez = zeros((3,n),'d')
-    bx,by,bz = zeros((3,n),'d')
+    ex,ey,ez = np.zeros((3,n),'d')
+    bx,by,bz = np.zeros((3,n),'d')
 
     if n == 0: return ex,ey,ez,bx,by,bz
 
     # --- Allow z to be a scalar (as in the slice case)
-    if len(shape(z)) == 0: z = z*ones(n,'d')
+    if len(np.shape(z)) == 0: z = z*np.ones(n,'d')
 
     # --- Save existing internal lattice variables so they can be restored
     # --- afterward.
@@ -531,8 +531,8 @@ def getappliedfields(x,y,z,time=0.,js=0):
     nzlsave = top.nzl
     nzlmaxsave = top.nzlmax
 
-    zmin = min(z)
-    zmax = max(z)
+    zmin = np.min(z)
+    zmax = np.max(z)
 
     # --- Set them based on the particle data
     zlen = zmax - zmin
@@ -547,7 +547,7 @@ def getappliedfields(x,y,z,time=0.,js=0):
         top.nzl = 1000
         top.dzl = (top.zlmax - top.zlmin)/top.nzl
         top.dzli = 1./top.dzl
-        top.nzlmax = max(top.nzlmax,top.nzl)
+        top.nzlmax = np.max(top.nzlmax,top.nzl)
         gchange("LatticeInternal")
         zbeam = 0.
 
@@ -556,14 +556,14 @@ def getappliedfields(x,y,z,time=0.,js=0):
     setlattzt(zbeam,time)
 
     # --- Create other temporaries
-    uzp = ones(n,'d')
-    gaminv = ones(n,'d')
+    uzp = np.ones(n,'d')
+    gaminv = np.ones(n,'d')
     dtl = -0.5*top.dt
     dtr = +0.5*top.dt
     m = top.pgroup.sm[js]
     q = top.pgroup.sq[js]
-    bendres = ones(n,'d')
-    bendradi = ones(n,'d')
+    bendres = np.ones(n,'d')
+    bendradi = np.ones(n,'d')
     dt = top.dt
 
     exteb3d(n,x,y,z,uzp,gaminv,dtl,dtr,
@@ -586,8 +586,8 @@ def getappliedfields(x,y,z,time=0.,js=0):
 def getappliedfieldsforspecies(species):
     dtl = -0.5*top.dt
     dtr = +0.5*top.dt
-    bendres = ones(species.nps,'d')
-    bendradi = ones(species.nps,'d')
+    bendres = np.ones(species.nps,'d')
+    bendradi = np.ones(species.nps,'d')
 # --- getbend not available in Python yet
 # getbend(species.nps,species.nps,
 #         species.zp,species.uzp,species.gaminv,
@@ -655,18 +655,18 @@ def fixrestoresfrombeforeelementoverlaps(ff):
   If this is the case, the lattice is reset and the overlap data generated.
     """
     doreset = 0
-    if top.ndrft >= 0 and sum(top.odrftnn) < top.ndrft+1: doreset = 1
-    if top.nbend >= 0 and sum(top.obendnn) < top.nbend+1: doreset = 1
-    if top.ndipo >= 0 and sum(top.odiponn) < top.ndipo+1: doreset = 1
-    if top.nquad >= 0 and sum(top.oquadnn) < top.nquad+1: doreset = 1
-    if top.nsext >= 0 and sum(top.osextnn) < top.nsext+1: doreset = 1
-    if top.nhele >= 0 and sum(top.ohelenn) < top.nhele+1: doreset = 1
-    if top.nemlt >= 0 and sum(top.oemltnn) < top.nemlt+1: doreset = 1
-    if top.nmmlt >= 0 and sum(top.ommltnn) < top.nmmlt+1: doreset = 1
-    if top.naccl >= 0 and sum(top.oacclnn) < top.naccl+1: doreset = 1
-    if top.nbgrd >= 0 and sum(top.obgrdnn) < top.nbgrd+1: doreset = 1
-    if top.npgrd >= 0 and sum(top.opgrdnn) < top.npgrd+1: doreset = 1
-    if top.nbsqgrad >= 0 and sum(top.obsqgradnn) < top.nbsqgrad+1: doreset = 1
+    if top.ndrft >= 0 and np.sum(top.odrftnn) < top.ndrft+1: doreset = 1
+    if top.nbend >= 0 and np.sum(top.obendnn) < top.nbend+1: doreset = 1
+    if top.ndipo >= 0 and np.sum(top.odiponn) < top.ndipo+1: doreset = 1
+    if top.nquad >= 0 and np.sum(top.oquadnn) < top.nquad+1: doreset = 1
+    if top.nsext >= 0 and np.sum(top.osextnn) < top.nsext+1: doreset = 1
+    if top.nhele >= 0 and np.sum(top.ohelenn) < top.nhele+1: doreset = 1
+    if top.nemlt >= 0 and np.sum(top.oemltnn) < top.nemlt+1: doreset = 1
+    if top.nmmlt >= 0 and np.sum(top.ommltnn) < top.nmmlt+1: doreset = 1
+    if top.naccl >= 0 and np.sum(top.oacclnn) < top.naccl+1: doreset = 1
+    if top.nbgrd >= 0 and np.sum(top.obgrdnn) < top.nbgrd+1: doreset = 1
+    if top.npgrd >= 0 and np.sum(top.opgrdnn) < top.npgrd+1: doreset = 1
+    if top.nbsqgrad >= 0 and np.sum(top.obsqgradnn) < top.nbsqgrad+1: doreset = 1
     if doreset:
         resetlat()
         setlatt()
@@ -678,7 +678,7 @@ def fixrestoreswithmomentswithoutspecies(ff):
     """
     # --- First, check if the file has the old moments in it.
     ek = ff.read('ek@top')
-    if isinstance(ek,ndarray):
+    if isinstance(ek,np.ndarray):
         # --- If it has the new ones, do nothing.
         ff.close()
         return
@@ -778,9 +778,9 @@ def fixrestoreswithoriginalparticlearrays(ff):
     top.pgroup.fselfb = ff.read("fselfb@top")
 
     try:
-        top.pgroup.sid = arange(top.ns)
+        top.pgroup.sid = np.arange(top.ns)
     except:
-        top.pgroup.js = arange(top.ns)
+        top.pgroup.js = np.arange(top.ns)
 
     top.pgroup.gaminv = ff.read("gaminv@top")
     top.pgroup.xp = ff.read("xp@top")
@@ -1184,7 +1184,7 @@ def printtimers(file=None,lminmax=0,mintime=0.,icontrollers:base_typing.Literal[
         def _doprint(name,value,gen):
             # --- gen is None when printing the generate time.
             # --- gen is either 0 or 1, 1 if the action happened during the generate
-            vlist = numpy.array(gather(value))
+            vlist = np.array(gather(value))
             if me > 0: return
             printtimer_utils.write_vlist(
                 vlist = vlist,
@@ -1224,7 +1224,7 @@ def printtimers(file=None,lminmax=0,mintime=0.,icontrollers:base_typing.Literal[
         # --- the flag)
         for name in pkg.varlist(timergroup)[1:]:
             value = getattr(pkg,name)
-            vlist = numpy.array(gather(value))
+            vlist = np.array(gather(value))
             if me > 0: continue
             printtimer_utils.write_vlist(
                 vlist = vlist,
@@ -1253,7 +1253,7 @@ def printtimers(file=None,lminmax=0,mintime=0.,icontrollers:base_typing.Literal[
             ff.write('\n'.join(header_rows)+'\n')
 
         for c in controllerfunctioncontainer.clist:
-            vlist = numpy.array(gather(c.time))
+            vlist = np.array(gather(c.time))
             if me > 0: continue
             printtimer_utils.write_vlist(
                 vlist = vlist,
@@ -1293,7 +1293,7 @@ def printtimersordered(file=None,depth:base_typing.Literal[0,1,2,3,4]=3,mintime=
 
     def _doprint(i,v,name):
         if i > depth: return
-        v = numpy.array(gather(v)).sum()/npes
+        v = np.array(gather(v)).sum()/npes
         if v > mintime:
             ff.write(f"{i*'    '}{name:<20}  {f2s(v,7,1)}\n")
 
