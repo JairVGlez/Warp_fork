@@ -181,15 +181,18 @@ class Secondaries:
                 top.ssnparentpid=nextpid()
                 setuppgroup(top.pgroup)
         # --- set variables for secondary electrons routines
-        self.secelec_ns = zeros(1,'l')
-        self.secelec_un = zeros(maxsec,'d')
-        self.secelec_ut = zeros(maxsec,'d')
-        self.secelec_uz = zeros(maxsec,'d')
-        self.secelec_ityps  = zeros(maxsec,'l')
-        self.secelec_ekstot = zeros(maxsec,'d')
-        self.secelec_dele   = zeros(1,'d')
-        self.secelec_delr   = zeros(1,'d')
-        self.secelec_delts  = zeros(1,'d')
+        # These arrays are only relevant to the Posinst-based models; in
+        # PyECLOUD mode maxsec is None, so the allocation is skipped.
+        if not self.flag_pyecloud:
+            self.secelec_ns = zeros(1,'l')
+            self.secelec_un = zeros(maxsec,'d')
+            self.secelec_ut = zeros(maxsec,'d')
+            self.secelec_uz = zeros(maxsec,'d')
+            self.secelec_ityps  = zeros(maxsec,'l')
+            self.secelec_ekstot = zeros(maxsec,'d')
+            self.secelec_dele   = zeros(1,'d')
+            self.secelec_delr   = zeros(1,'d')
+            self.secelec_delts  = zeros(1,'d')
         # --- set arrays for emitted particles
         self.npmax={}
         self.nps={}
